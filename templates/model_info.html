@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Model Information</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <h1>⚙️ Detail dan Metrik Model SVM</h1>
+        
+        {% if info.simulasi_mode %}
+        <div class="alert-error" style="background-color: #fff3cd; color: #856404; border-color: #ffeeba;">
+            ⚠️ **PERINGATAN: Mode SIMULASI Aktif!** Aplikasi tidak dapat memuat model `model_svm_emg.joblib`. Metrik di bawah ini adalah *placeholder* dan prediksi mengembalikan hasil acak/default.
+        </div>
+        {% endif %}
+
+        <p>Halaman ini menampilkan spesifikasi teknis dan performa dari model klasifikasi gestur EMG.</p>
+        
+        <section class="performance">
+            <h2>Metrik Performa</h2>
+            <div class="metric-box">
+                <span class="metric-label">Akurasi Test (Testing Set)</span>
+                <!-- info.akurasi datang dari app.py -->
+                <span class="metric-value">{{ (info.akurasi * 100) | round(2) }}%</span>
+            </div>
+            
+            <!-- Tambahkan visualisasi CM Anda di sini -->
+            <h2>Confusion Matrix</h2>
+            <p>Matriks yang menunjukkan jumlah prediksi benar dan salah pada data uji.</p>
+            <img src="{{ url_for('static', filename='confusion_matrix.png') }}" 
+                 alt="Confusion Matrix" class="confusion-matrix-img">
+            <p class="note">Anda harus menempatkan file gambar Confusion Matrix (.png) yang Anda buat dari Colab ke folder static/.</p>
+        </section>
+
+        <section class="specs">
+            <h2>Spesifikasi Model</h2>
+            <table>
+                <tr><th>Algoritma</th><td>Support Vector Machine (SVM)</td></tr>
+                <tr><th>Kernel Terbaik</th><td>{{ info.kernel | upper }}</td></tr>
+                <tr><th>Hyperparameter C</th><td>{{ info.C }}</td></tr>
+                <tr><th>Hyperparameter Gamma</th><td>{{ info.gamma }}</td></tr>
+                <tr><th>Total Sampel Training</th><td>{{ info.data_info }}</td></tr>
+            </table>
+            
+            <p class="download-link">
+                <a href="#">[Opsional: Download Model .joblib]</a>
+            </p>
+        </section>
+
+        <a href="{{ url_for('index') }}" class="button back-button">← Kembali ke Home</a>
+    </div>
+</body>
+</html>
