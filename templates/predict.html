@@ -1,69 +1,79 @@
 <!DOCTYPE html>
-<html lang="id">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Prediksi Gestur EMG</title>
+    <title>Prediksi Gestur</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
     <div class="container">
-        <h1>🔮 Prediksi Gestur Tangan</h1>
-        <p class="subtitle">Masukkan 64 nilai data sinyal EMG untuk klasifikasi</p>
+        <h1>🔍 Input Data EMG</h1>
+        <p>Masukkan 64 nilai sinyal EMG (8 sensor × 8 time steps) yang dipisahkan oleh koma (CSV format).</p>
 
         {% if error %}
-        <div class="alert alert-error">
-            <strong>❌ Error:</strong> {{ error }}
-        </div>
+        <div class="alert-error">{{ error }}</div>
         {% endif %}
 
-        <form method="POST" class="predict-form">
-            <div class="form-group">
-                <label for="emg_data">
-                    <strong>Data EMG (64 nilai)</strong>
-                    <span class="hint">Pisahkan dengan koma. Contoh: 0.5, -1.2, 0.8, ...</span>
+        <section class="input-form">
+            <h2>Data Input (64 Fitur)</h2>
+            <form id="predict-form" method="POST" action="{{ url_for('predict') }}">
+                <label for="emg_data" style="font-weight: 600; display: block; margin-bottom: 8px;">
+                    Data Sinyal (64 Angka):
                 </label>
-                <textarea 
-                    id="emg_data" 
-                    name="emg_data" 
-                    rows="6" 
-                    required 
-                    placeholder="Masukkan 64 nilai EMG dipisahkan dengan koma..."
-                ></textarea>
-            </div>
-
-            <div class="button-group">
-                <button type="submit" class="button button-primary">
-                    🎯 Prediksi Gestur
-                </button>
-                <button type="button" class="button button-secondary" onclick="fillSampleData()">
-                    📝 Isi Data Sample
-                </button>
-            </div>
-        </form>
-
-        <div class="info-box">
-            <h3>ℹ️ Informasi Input</h3>
-            <ul>
-                <li>Masukkan <strong>tepat 64 nilai numerik</strong></li>
-                <li>Pisahkan setiap nilai dengan <strong>koma (,)</strong></li>
-                <li>Nilai bisa positif atau negatif (contoh: -1.5, 0.3, 2.1)</li>
-                <li>Spasi setelah koma bersifat opsional</li>
-            </ul>
-        </div>
-
-        <a href="{{ url_for('index') }}" class="button back-button">← Kembali ke Home</a>
+                
+                <textarea id="emg_data" name="emg_data" 
+                          placeholder="Pastikan Anda memasukkan 64 nilai numerik yang dipisahkan koma, contoh: 12.5, 13.0, 11.8, ..., 9.2" 
+                          required></textarea>
+                
+                <div style="margin-top: 20px;">
+                    <button type="submit" class="button primary">Prediksi Gestur Sekarang</button>
+                    <!-- Tombol untuk generate data acak -->
+                    <button type="button" id="random-sample-btn" class="button secondary">
+                        Generate Random Sample
+                    </button>
+                </div>
+            </form>
+        </section>
+        
+        <nav class="navigation-bottom">
+            <a href="{{ url_for('index') }}" class="button secondary">← Kembali ke Home</a>
+        </nav>
     </div>
 
+    <!-- Script untuk menangani pengisian data acak otomatis -->
     <script>
-        function fillSampleData() {
-            // Generate 64 nilai random antara -2 dan 2
-            const sampleData = [];
-            for (let i = 0; i < 64; i++) {
-                sampleData.push((Math.random() * 4 - 2).toFixed(3));
+        // Logika untuk mengirim permintaan POST ke Flask untuk menghasilkan data acak
+        document.getElementById('random-sample-btn').addEventListener('click', function() {
+            // Hit route baru untuk generate data, yang kemudian me-redirect dengan data di URL
+            fetch('{{ url_for("generate_random_sample") }}', {
+                method: 'POST'
+            })
+            .then(response => {
+                // Flask akan me-redirect dengan data acak di parameter URL
+                if (response.redirected) {
+                    window.location.href = response.url;
+                }
+            });
+        });
+
+        // Logika untuk menangkap data acak dari URL dan mengisi form
+        document.addEventListener('DOMContentLoaded', function() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const randomData = urlParams.get('emg_data_random');
+            const textarea = document.getElementById('emg_data');
+            
+            if (randomData) {
+                // Jika ada data acak di URL, masukkan ke textarea
+                textarea.value = randomData;
+                
+                // Hapus parameter dari URL agar bersih
+                history.replaceState(null, '', window.location.pathname);
+                
+                // Opsional: Langsung submit form secara otomatis setelah data diisi (dinonaktifkan untuk kontrol user)
+                // document.getElementById('predict-form').submit();
             }
-            document.getElementById('emg_data').value = sampleData.join(', ');
-        }
+        });
     </script>
 </body>
 </html>

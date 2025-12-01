@@ -1,81 +1,49 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>TEST - EMG App</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            padding: 20px;
-            color: white;
-        }
-        .container {
-            max-width: 800px;
-            margin: 0 auto;
-            background: white;
-            padding: 30px;
-            border-radius: 10px;
-            color: #333;
-        }
-        .button {
-            display: inline-block;
-            padding: 15px 30px;
-            margin: 10px;
-            background: #667eea;
-            color: white;
-            text-decoration: none;
-            border-radius: 5px;
-            font-weight: bold;
-        }
-        .button:hover {
-            background: #764ba2;
-        }
-        .gesture-box {
-            display: inline-block;
-            margin: 10px;
-            padding: 20px;
-            background: #f0f0f0;
-            border-radius: 10px;
-            text-align: center;
-        }
-        .emoji {
-            font-size: 3em;
-        }
-    </style>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EMG Gesture Classifier - Home</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
     <div class="container">
-        <h1>🤖 Sistem Klasifikasi Gestur EMG</h1>
-        <p><strong>TEST - Jika Anda melihat ini, HTML berhasil dimuat!</strong></p>
+        <header>
+            <h1><span style="color: var(--color-secondary);">💪</span> EMG Gesture Classifier</h1>
+            <p class="subtitle">Sistem Cerdas untuk Klasifikasi Gerakan Tangan Manusia</p>
+        </header>
+
+        <section class="overview">
+            <h2>Tentang Proyek</h2>
+            <p>Aplikasi ini adalah implementasi *real-time* dari proyek Sistem Cerdas yang menggunakan **Support Vector Machine (SVM)** untuk mengklasifikasikan empat gestur tangan utama: **Rock, Scissors, Paper, dan OK**.</p>
+            <p>Data input berupa sinyal **Elektromiografi (EMG)** yang berasal dari 8 sensor yang dicatat selama 8 *time slice*, menghasilkan **64 fitur** numerik untuk setiap prediksi.</p>
+        </section>
         
-        <h2>4 Jenis Gestur:</h2>
-        <div>
-            <div class="gesture-box">
-                <div class="emoji">✊</div>
-                <div>Rock</div>
-            </div>
-            <div class="gesture-box">
-                <div class="emoji">✌️</div>
-                <div>Scissors</div>
-            </div>
-            <div class="gesture-box">
-                <div class="emoji">✋</div>
-                <div>Paper</div>
-            </div>
-            <div class="gesture-box">
-                <div class="emoji">👌</div>
-                <div>OK</div>
-            </div>
+        <div class="hero-action">
+            <a href="{{ url_for('predict') }}" class="button primary">
+                Mulai Prediksi Gestur Sekarang
+            </a>
         </div>
 
-        <hr>
-        <h2>Menu:</h2>
-        <a href="{{ url_for('model_info') }}" class="button">📊 Info Model</a>
-        <a href="{{ url_for('predict') }}" class="button">🔮 Prediksi</a>
-        
-        <hr>
-        <p><em>Jika halaman ini terlihat dengan baik, berarti Flask sudah berfungsi!</em></p>
+        <section class="model-info">
+            <h2>Alur Kerja & Teknologi</h2>
+            <div class="pipeline-diagram">
+                <div class="step">Sensor EMG (64 Fitur)</div> 
+                <span>→</span>
+                <div class="step">Preprocessing & Scaling</div>
+                <span>→</span>
+                <div class="step">Model SVM (Klasifikasi)</div>
+                <span>→</span>
+                <div class="step">Tampilan Web (Hasil & Confidence)</div>
+            </div>
+            
+
+            <p>Seluruh sistem *backend* diimplementasikan menggunakan Python Flask, Scikit-learn, dan di-*deploy* di PythonAnywhere.</p>
+        </section>
+
+        <nav class="navigation-bottom">
+            <a href="{{ url_for('model_info') }}" class="button secondary">Detail Metrik Model</a>
+        </nav>
     </div>
 </body>
 </html>

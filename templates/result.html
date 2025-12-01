@@ -2,12 +2,13 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Hasil Prediksi</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-    </head>
+</head>
 <body>
     <div class="container">
-        <h1>✨ Hasil Prediksi Gestur</h1>
+        <h1>🎉 Hasil Prediksi Gestur</h1>
 
         <section class="prediction-result">
             <h2>Gesture Terdeteksi:</h2>
@@ -21,11 +22,16 @@
             <p>Model memprediksi kelas gestur dengan tingkat kepercayaan berikut:</p>
             
             <div class="probability-list">
+                <!-- Looping melalui GESTURE_MAP untuk mendapatkan ID (0, 1, 2, 3) dan Nama -->
                 {% for class_id, class_name in gesture_map.items() %}
                 <div class="prob-item">
                     <span class="prob-label">{{ class_name }}:</span>
-                    <span class="prob-value">{{ (probabilities[class_id] * 100) | round(2) }}%</span>
-                    <div class="prob-bar" style="width: {{ (probabilities[class_id] * 100) | round(0) }}%;"></div>
+                    
+                    <!-- Menghitung persentase kepercayaan -->
+                    {% set confidence = probabilities[class_id] * 100 %}
+                    <span class="prob-value">{{ confidence | round(2) }}%</span>
+                    <!-- Mengatur lebar progress bar CSS -->
+                    <div class="prob-bar" style="width: {{ confidence | round(0) }}%;"></div>
                 </div>
                 {% endfor %}
             </div>
@@ -33,18 +39,27 @@
 
         <section class="input-visualization">
             <h2>Visualisasi Input Sinyal (8x8 Grid)</h2>
-            <p>Tampilan matriks 8x8 dari 64 nilai EMG yang Anda masukkan. Warna menunjukkan amplitudo sinyal.</p>
+            <p>Tampilan matriks 8x8 dari 64 nilai EMG yang Anda masukkan (Nilai absolut tertinggi berwarna lebih gelap, menunjukkan aktivitas otot). </p>
             
             <div class="emg-grid-container">
                 <div class="emg-grid">
+                    <!-- Tentukan nilai absolut maksimum dan minimum dari data untuk scaling Heatmap -->
+                    {% set abs_vals = input_data_64 | map('abs') | list %}
+                    {% set max_val = abs_vals | max %}
+                    {% set min_val = abs_vals | min %}
+                    
                     {% for value in input_data_64 %}
-                        <div class="grid-cell" style="background-color: rgba(255, 69, 0, {{ (value / 500) | float | abs }});"
+                        <!-- Scaling nilai (dari 0 hingga 1) untuk opacity. Menggunakan abs() untuk Heatmap -->
+                        {% set abs_val = value | abs %}
+                        {% set scaled_opacity = (abs_val - min_val) / (max_val - min_val + 0.001) %}
+                        
+                        <!-- Mengatur warna background (Heatmap) dan warna font (agar terbaca) -->
+                        <div class="grid-cell" style="background-color: rgb(255, 69, 0, {{ scaled_opacity }}); color: {% if scaled_opacity > 0.8 %} white {% else %} #333 {% endif %}"
                              title="Nilai: {{ value | round(2) }}">
                             {{ value | round(1) }}
                         </div>
                     {% endfor %}
                 </div>
-                <p class="note">Catatan: Skala warna (contoh `rgba(..., (value/500)|float|abs)`) mungkin perlu disesuaikan di `style.css` tergantung rentang nilai EMG Anda.</p>
             </div>
         </section>
 

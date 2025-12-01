@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Model Information</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
@@ -11,44 +12,47 @@
         
         {% if info.simulasi_mode %}
         <div class="alert-error" style="background-color: #fff3cd; color: #856404; border-color: #ffeeba;">
-            ⚠️ **PERINGATAN: Mode SIMULASI Aktif!** Aplikasi tidak dapat memuat model `model_svm_emg.joblib`. Metrik di bawah ini adalah *placeholder* dan prediksi mengembalikan hasil acak/default.
+            ⚠️ **PERINGATAN: Mode SIMULASI Aktif!** Model SVM belum dimuat. Metrik di bawah ini adalah *placeholder*.
         </div>
         {% endif %}
 
-        <p>Halaman ini menampilkan spesifikasi teknis dan performa dari model klasifikasi gestur EMG.</p>
-        
         <section class="performance">
-            <h2>Metrik Performa</h2>
-            <div class="metric-box">
-                <span class="metric-label">Akurasi Test (Testing Set)</span>
-                <!-- info.akurasi datang dari app.py -->
-                <span class="metric-value">{{ (info.akurasi * 100) | round(2) }}%</span>
+            <h2>Metrik Performa Kunci</h2>
+            
+            <div class="metric-box-group">
+                <div class="metric-card">
+                    <span class="metric-label">Akurasi Test Set</span>
+                    <span class="metric-value">{{ (info.akurasi * 100) | round(2) }}%</span>
+                </div>
+                <div class="metric-card">
+                    <span class="metric-label">Algoritma Utama</span>
+                    <span class="metric-value" style="color: #64748b;">SVM</span>
+                </div>
+                <div class="metric-card">
+                    <span class="metric-label">Kernel Terbaik</span>
+                    <span class="metric-value" style="color: #64748b;">{{ info.kernel | upper }}</span>
+                </div>
             </div>
             
-            <!-- Tambahkan visualisasi CM Anda di sini -->
             <h2>Confusion Matrix</h2>
-            <p>Matriks yang menunjukkan jumlah prediksi benar dan salah pada data uji.</p>
+            <p>Visualisasi performa prediksi model untuk setiap kelas gestur. [Image of Confusion Matrix]</p>
             <img src="{{ url_for('static', filename='confusion_matrix.png') }}" 
                  alt="Confusion Matrix" class="confusion-matrix-img">
-            <p class="note">Anda harus menempatkan file gambar Confusion Matrix (.png) yang Anda buat dari Colab ke folder static/.</p>
+            <p class="note">Anda perlu menempatkan file `confusion_matrix.png` di folder `static/`.</p>
         </section>
 
         <section class="specs">
-            <h2>Spesifikasi Model</h2>
+            <h2>Spesifikasi Teknis</h2>
             <table>
-                <tr><th>Algoritma</th><td>Support Vector Machine (SVM)</td></tr>
-                <tr><th>Kernel Terbaik</th><td>{{ info.kernel | upper }}</td></tr>
                 <tr><th>Hyperparameter C</th><td>{{ info.C }}</td></tr>
                 <tr><th>Hyperparameter Gamma</th><td>{{ info.gamma }}</td></tr>
                 <tr><th>Total Sampel Training</th><td>{{ info.data_info }}</td></tr>
             </table>
-            
-            <p class="download-link">
-                <a href="#">[Opsional: Download Model .joblib]</a>
-            </p>
         </section>
 
-        <a href="{{ url_for('index') }}" class="button back-button">← Kembali ke Home</a>
+        <nav class="navigation-bottom">
+            <a href="{{ url_for('index') }}" class="button secondary">← Kembali ke Home</a>
+        </nav>
     </div>
 </body>
 </html>
