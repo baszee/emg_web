@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>TEST - EMG App</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 20px;
+            color: white;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            color: #333;
+        }
+        .button {
+            display: inline-block;
+            padding: 15px 30px;
+            margin: 10px;
+            background: #667eea;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            font-weight: bold;
+        }
+        .button:hover {
+            background: #764ba2;
+        }
+        .gesture-box {
+            display: inline-block;
+            margin: 10px;
+            padding: 20px;
+            background: #f0f0f0;
+            border-radius: 10px;
+            text-align: center;
+        }
+        .emoji {
+            font-size: 3em;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🤖 Sistem Klasifikasi Gestur EMG</h1>
+        <p><strong>TEST - Jika Anda melihat ini, HTML berhasil dimuat!</strong></p>
+        
+        <h2>4 Jenis Gestur:</h2>
+        <div>
+            <div class="gesture-box">
+                <div class="emoji">✊</div>
+                <div>Rock</div>
+            </div>
+            <div class="gesture-box">
+                <div class="emoji">✌️</div>
+                <div>Scissors</div>
+            </div>
+            <div class="gesture-box">
+                <div class="emoji">✋</div>
+                <div>Paper</div>
+            </div>
+            <div class="gesture-box">
+                <div class="emoji">👌</div>
+                <div>OK</div>
+            </div>
+        </div>
+
+        <hr>
+        <h2>Menu:</h2>
+        <a href="{{ url_for('model_info') }}" class="button">📊 Info Model</a>
+        <a href="{{ url_for('predict') }}" class="button">🔮 Prediksi</a>
+        
+        <hr>
+        <p><em>Jika halaman ini terlihat dengan baik, berarti Flask sudah berfungsi!</em></p>
+    </div>
+</body>
+</html>

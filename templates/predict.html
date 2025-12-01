@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Prediksi Gestur EMG</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <h1>🔮 Prediksi Gestur Tangan</h1>
+        <p class="subtitle">Masukkan 64 nilai data sinyal EMG untuk klasifikasi</p>
+
+        {% if error %}
+        <div class="alert alert-error">
+            <strong>❌ Error:</strong> {{ error }}
+        </div>
+        {% endif %}
+
+        <form method="POST" class="predict-form">
+            <div class="form-group">
+                <label for="emg_data">
+                    <strong>Data EMG (64 nilai)</strong>
+                    <span class="hint">Pisahkan dengan koma. Contoh: 0.5, -1.2, 0.8, ...</span>
+                </label>
+                <textarea 
+                    id="emg_data" 
+                    name="emg_data" 
+                    rows="6" 
+                    required 
+                    placeholder="Masukkan 64 nilai EMG dipisahkan dengan koma..."
+                ></textarea>
+            </div>
+
+            <div class="button-group">
+                <button type="submit" class="button button-primary">
+                    🎯 Prediksi Gestur
+                </button>
+                <button type="button" class="button button-secondary" onclick="fillSampleData()">
+                    📝 Isi Data Sample
+                </button>
+            </div>
+        </form>
+
+        <div class="info-box">
+            <h3>ℹ️ Informasi Input</h3>
+            <ul>
+                <li>Masukkan <strong>tepat 64 nilai numerik</strong></li>
+                <li>Pisahkan setiap nilai dengan <strong>koma (,)</strong></li>
+                <li>Nilai bisa positif atau negatif (contoh: -1.5, 0.3, 2.1)</li>
+                <li>Spasi setelah koma bersifat opsional</li>
+            </ul>
+        </div>
+
+        <a href="{{ url_for('index') }}" class="button back-button">← Kembali ke Home</a>
+    </div>
+
+    <script>
+        function fillSampleData() {
+            // Generate 64 nilai random antara -2 dan 2
+            const sampleData = [];
+            for (let i = 0; i < 64; i++) {
+                sampleData.push((Math.random() * 4 - 2).toFixed(3));
+            }
+            document.getElementById('emg_data').value = sampleData.join(', ');
+        }
+    </script>
+</body>
+</html>

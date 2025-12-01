@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Hasil Prediksi</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    </head>
+<body>
+    <div class="container">
+        <h1>✨ Hasil Prediksi Gestur</h1>
+
+        <section class="prediction-result">
+            <h2>Gesture Terdeteksi:</h2>
+            <div class="predicted-box">
+                <span class="gesture-name">{{ gesture }}</span>
+            </div>
+        </section>
+
+        <section class="confidence-scores">
+            <h2>Probabilitas / Confidence Score</h2>
+            <p>Model memprediksi kelas gestur dengan tingkat kepercayaan berikut:</p>
+            
+            <div class="probability-list">
+                {% for class_id, class_name in gesture_map.items() %}
+                <div class="prob-item">
+                    <span class="prob-label">{{ class_name }}:</span>
+                    <span class="prob-value">{{ (probabilities[class_id] * 100) | round(2) }}%</span>
+                    <div class="prob-bar" style="width: {{ (probabilities[class_id] * 100) | round(0) }}%;"></div>
+                </div>
+                {% endfor %}
+            </div>
+        </section>
+
+        <section class="input-visualization">
+            <h2>Visualisasi Input Sinyal (8x8 Grid)</h2>
+            <p>Tampilan matriks 8x8 dari 64 nilai EMG yang Anda masukkan. Warna menunjukkan amplitudo sinyal.</p>
+            
+            <div class="emg-grid-container">
+                <div class="emg-grid">
+                    {% for value in input_data_64 %}
+                        <div class="grid-cell" style="background-color: rgba(255, 69, 0, {{ (value / 500) | float | abs }});"
+                             title="Nilai: {{ value | round(2) }}">
+                            {{ value | round(1) }}
+                        </div>
+                    {% endfor %}
+                </div>
+                <p class="note">Catatan: Skala warna (contoh `rgba(..., (value/500)|float|abs)`) mungkin perlu disesuaikan di `style.css` tergantung rentang nilai EMG Anda.</p>
+            </div>
+        </section>
+
+        <nav class="navigation-bottom">
+            <a href="{{ url_for('predict') }}" class="button primary">Coba Prediksi Lagi</a>
+            <a href="{{ url_for('index') }}" class="button secondary">Kembali ke Home</a>
+        </nav>
+    </div>
+</body>
+</html>
