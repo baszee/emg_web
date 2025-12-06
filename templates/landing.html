@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Selamat Datang - EMG Classifier</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <style>
+        /* CSS tambahan agar Landing Page terpusat dan menarik */
+        body {
+            background-color: var(--color-background); /* Ambil dari style.css jika ada */
+        }
+        .full-screen-center {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            text-align: center;
+            color: var(--color-text);
+        }
+        .full-screen-center h1 {
+            font-size: 3.5em;
+            margin-bottom: 0.1em;
+            color: var(--color-primary);
+        }
+        .full-screen-center h2 {
+            font-size: 1.8em;
+            margin-bottom: 0.8em;
+            font-weight: 300;
+        }
+        .full-screen-center p {
+            font-size: 1.1em;
+            margin-bottom: 3em;
+            max-width: 700px;
+        }
+    </style>
+</head>
+<body>
+    <div class="full-screen-center container">
+        <h1>👋 Selamat Datang</h1>
+        <h2>Sistem Klasifikasi Gestur Tangan EMG</h2>
+        <p>Aplikasi ini mengimplementasikan model Support Vector Machine (SVM) untuk mengidentifikasi 4 gerakan tangan utama berdasarkan data sinyal Elektromiografi (EMG) real-time.</p>
+        
+        <a href="{{ url_for('index') }}" class="button primary" style="padding: 18px 50px; font-size: 1.4em; border-radius: 8px;">
+            Masuk ke Dashboard
+        </a>
+        
+        <p class="small-text" style="margin-top: 30px; opacity: 0.7;">Klik 'Masuk' untuk melihat detail model dan memulai prediksi.</p>
+    </div>
+</body>
+</html>

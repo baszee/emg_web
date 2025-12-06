@@ -1,24 +1,34 @@
+# ==================================
+# 📚 1. IMPORTS & KONFIGURASI
+# ==================================
 import joblib
 import numpy as np
 import random 
 from flask import Flask, render_template, request, redirect, url_for
 
-# 1. Inisialisasi Aplikasi Flask
+# --- KONSTANTA & VARIABEL GLOBAL ---
+MODEL_PATH = 'model_svm_emg.joblib'
+GESTURE_MAP = {0: 'Rock ✊', 1: 'Scissors ✌️', 2: 'Paper ✋', 3: 'OK 👌'} 
+
+# --- PLACEHOLDERS (Digunakan jika Mode Simulasi Aktif) ---
+model = None 
+mean_scaler = np.zeros(64)   
+std_scaler = np.ones(64)     
+akurasi_test = 0.0           
+parameter_terbaik = {'kernel': 'Simulasi', 'C': 'N/A', 'gamma': 'N/A'} 
+MODE_SIMULASI = True 
+
+# ==================================
+# ⚙️ 2. INISIALISASI APLIKASI
+# ==================================
 app = Flask(__name__)
 
-# 2. Load Model, Scaler, dan Metadata (dengan mekanisme Fallback/Simulasi)
-# Definisikan nilai default (placeholder) jika model gagal dimuat
-model = None 
-mean_scaler = np.zeros(64)   # Placeholder: Rata-rata 0
-std_scaler = np.ones(64)     # Placeholder: Standar Deviasi 1
-GESTURE_MAP = {0: 'Rock ✊', 1: 'Scissors ✌️', 2: 'Paper ✋', 3: 'OK 👌'} 
-akurasi_test = 0.0           # Placeholder
-parameter_terbaik = {'kernel': 'Simulasi', 'C': 'N/A', 'gamma': 'N/A'} # Placeholder
-MODE_SIMULASI = True
-
+# ==================================
+# 💾 3. LOAD MODEL DENGAN FALLBACK
+# ==================================
 try:
     # Model Anda menyimpan model, scaler, dan metadata dalam satu dictionary
-    data_model = joblib.load('model_svm_emg.joblib')
+    data_model = joblib.load(MODEL_PATH)
     
     # Inisialisasi dengan data yang dimuat
     model = data_model['model']
@@ -44,11 +54,18 @@ except Exception as e:
     print("!!! Prediksi akan mengembalikan hasil acak/default. Silakan masukkan model yang valid.")
 
 
+# ==================================
 # --- ROUTE APLIKASI ---
+# ==================================
 
 @app.route('/')
+def landing():
+    """Halaman Awal (Landing Page) dengan tombol Masuk."""
+    return render_template('landing.html') # Memanggil file HTML baru
+
+@app.route('/dashboard')
 def index():
-    """Halaman Utama/Index (Dashboard Proper)."""
+    """Halaman Utama/Dashboard (Overview, ini adalah konten index.html lama)."""
     return render_template('index.html')
 
 @app.route('/model-info')
@@ -87,10 +104,7 @@ def predict():
         # --- LOGIKA PREDIKSI ---
         if MODE_SIMULASI:
             # Mode Simulasi: Berikan hasil acak dan probabilitas merata
-            
-            # --- Perbaikan: Pilih kelas secara ACAL setiap kali POST ---
             prediction_class = random.choice(list(GESTURE_MAP.keys())) 
-            # Probabilitas merata untuk simulasi (mis. 0.25, 0.25, 0.25, 0.25)
             probabilities = np.ones(len(GESTURE_MAP)) / len(GESTURE_MAP)
             
             result_gesture = f"{GESTURE_MAP.get(prediction_class, 'Kelas Tidak Diketahui')} (SIMULASI)"
@@ -102,7 +116,14 @@ def predict():
 
             # Prediksi (kelas dan probabilitas)
             prediction_class = model.predict(final_input_scaled)[0]
-            probabilities = model.predict_proba(final_input_scaled)[0] 
+            
+            # Cek apakah model mendukung predict_proba
+            if hasattr(model, 'predict_proba'):
+                 probabilities = model.predict_proba(final_input_scaled)[0]
+            else:
+                 # Fallback/simulasi probabilitas jika model tidak mendukung predict_proba
+                 probabilities = np.ones(len(GESTURE_MAP)) * 0.0 # Placeholder
+                 probabilities[prediction_class] = 1.0 # Kelas yang diprediksi diberi probabilitas 1.0
 
             result_gesture = GESTURE_MAP.get(prediction_class, "Kelas Tidak Diketahui")
         
@@ -114,22 +135,21 @@ def predict():
                                input_data_64=data_list) 
 
     # Jika method adalah GET, tampilkan formulir input
-    return render_template('predict.html')
+    emg_data_random = request.args.get('emg_data_random', '')
+    return render_template('predict.html', emg_data_default=emg_data_random)
 
 
 @app.route('/generate-random-sample', methods=['POST'])
 def generate_random_sample():
     """
     Menghasilkan 64 nilai EMG acak dan mengirimkannya ke /predict.
-    Asumsi rentang data EMG sekitar -50.0 hingga 50.0.
     """
-    # Menghasilkan 64 float acak dalam rentang yang wajar
     random_data = [random.uniform(-50.0, 50.0) for _ in range(64)]
     
     # Konversi ke string format CSV
     emg_data_str = ', '.join([f"{x:.2f}" for x in random_data])
     
-    # Kirim data ini sebagai POST request ke route /predict
+    # Kirim data ini sebagai GET request ke route /predict agar bisa di-prefill
     return redirect(url_for('predict', emg_data_random=emg_data_str))
 
 # Jalankan aplikasi
