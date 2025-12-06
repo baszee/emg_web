@@ -3,21 +3,33 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Model Information</title>
+    <title>Model Information - EMG Classifier</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
     <div class="container">
-        <h1>⚙️ Detail dan Metrik Model SVM</h1>
+        <!-- Header -->
+        <div class="hero">
+            <div class="hero-content">
+                <h1>🔬 Detail dan Metrik Model</h1>
+                <p class="hero-subtitle">
+                    Informasi lengkap tentang performa, arsitektur, dan parameter model SVM yang digunakan 
+                    dalam sistem klasifikasi gestur EMG ini.
+                </p>
+            </div>
+        </div>
         
         {% if info.simulasi_mode %}
-        <div class="alert-error" style="background-color: #fff3cd; color: #856404; border-color: #ffeeba;">
-            ⚠️ **PERINGATAN: Mode SIMULASI Aktif!** Model SVM belum dimuat. Metrik di bawah ini adalah *placeholder*.
+        <div class="alert-warning">
+            ⚠️ <strong>MODE SIMULASI AKTIF!</strong> Model SVM belum dimuat. Metrik yang ditampilkan 
+            di bawah ini adalah nilai <em>placeholder</em>. Silakan muat model yang valid untuk melihat 
+            data sebenarnya.
         </div>
         {% endif %}
 
+        <!-- Performance Metrics -->
         <section class="performance">
-            <h2>Metrik Performa Kunci</h2>
+            <h2 class="section-title">📈 Metrik Performa</h2>
             
             <div class="metric-box-group">
                 <div class="metric-card">
@@ -26,32 +38,113 @@
                 </div>
                 <div class="metric-card">
                     <span class="metric-label">Algoritma Utama</span>
-                    <span class="metric-value" style="color: #64748b;">SVM</span>
+                    <span class="metric-value" style="font-size: 1.5rem; color: var(--text);">SVM</span>
                 </div>
                 <div class="metric-card">
                     <span class="metric-label">Kernel Terbaik</span>
-                    <span class="metric-value" style="color: #64748b;">{{ info.kernel | upper }}</span>
+                    <span class="metric-value" style="font-size: 1.5rem; color: var(--text);">{{ info.kernel | upper }}</span>
                 </div>
             </div>
             
-            <h2>Confusion Matrix</h2>
-            <p>Visualisasi performa prediksi model untuk setiap kelas gestur. [Image of Confusion Matrix]</p>
+            <h2 class="section-title" style="margin-top: 2rem;">📊 Confusion Matrix</h2>
+            <p style="color: var(--text-light); margin-bottom: 1rem;">
+                Visualisasi performa model dalam memprediksi setiap kelas gestur. Baris menunjukkan 
+                kelas aktual, sedangkan kolom menunjukkan prediksi model.
+            </p>
+            
             <img src="{{ url_for('static', filename='confusion_matrix.png') }}" 
-                 alt="Confusion Matrix" class="confusion-matrix-img">
-            <p class="note">Anda perlu menempatkan file `confusion_matrix.png` di folder `static/`.</p>
+                 alt="Confusion Matrix" 
+                 class="confusion-matrix-img">
+            
+            <p class="note" style="color: var(--text-lighter); font-size: 0.875rem; margin-top: 1rem;">
+                💡 <strong>Catatan:</strong> File <code>confusion_matrix.png</code> harus ada di folder <code>static/</code>
+            </p>
         </section>
 
+        <!-- Technical Specifications -->
         <section class="specs">
-            <h2>Spesifikasi Teknis</h2>
-            <table>
-                <tr><th>Hyperparameter C</th><td>{{ info.C }}</td></tr>
-                <tr><th>Hyperparameter Gamma</th><td>{{ info.gamma }}</td></tr>
-                <tr><th>Total Sampel Training</th><td>{{ info.data_info }}</td></tr>
-            </table>
+            <h2 class="section-title">⚙️ Spesifikasi Teknis</h2>
+            
+            <div class="info-grid" style="margin-bottom: 0;">
+                <div class="info-card">
+                    <div class="card-icon">🎯</div>
+                    <h3 class="card-title">Hyperparameter C</h3>
+                    <p class="card-description">
+                        <strong>Nilai: {{ info.C }}</strong><br>
+                        Parameter regularisasi yang mengontrol trade-off antara memaksimalkan margin 
+                        dan meminimalkan kesalahan klasifikasi.
+                    </p>
+                </div>
+                
+                <div class="info-card">
+                    <div class="card-icon">📐</div>
+                    <h3 class="card-title">Hyperparameter Gamma</h3>
+                    <p class="card-description">
+                        <strong>Nilai: {{ info.gamma }}</strong><br>
+                        Koefisien kernel RBF yang menentukan seberapa jauh pengaruh satu training 
+                        example terhadap decision boundary.
+                    </p>
+                </div>
+                
+                <div class="info-card">
+                    <div class="card-icon">💾</div>
+                    <h3 class="card-title">Dataset Training</h3>
+                    <p class="card-description">
+                        <strong>{{ info.data_info }}</strong><br>
+                        Model dilatih menggunakan data yang dibagi dengan rasio 80:20 untuk 
+                        training dan testing.
+                    </p>
+                </div>
+            </div>
         </section>
 
+        <!-- Additional Info -->
+        <section class="pipeline-section">
+            <h2 class="section-title">🧠 Tentang Support Vector Machine (SVM)</h2>
+            
+            <div class="features-grid">
+                <div class="feature-item">
+                    <div class="feature-icon">📌</div>
+                    <div class="feature-text">
+                        <h3>Cara Kerja SVM</h3>
+                        <p>SVM mencari hyperplane optimal yang memaksimalkan margin antara kelas berbeda dalam ruang fitur berdimensi tinggi</p>
+                    </div>
+                </div>
+                
+                <div class="feature-item">
+                    <div class="feature-icon">🎨</div>
+                    <div class="feature-text">
+                        <h3>Kernel Trick</h3>
+                        <p>Menggunakan kernel RBF untuk memetakan data non-linear ke ruang dimensi lebih tinggi</p>
+                    </div>
+                </div>
+                
+                <div class="feature-item">
+                    <div class="feature-icon">⚡</div>
+                    <div class="feature-text">
+                        <h3>Efisiensi Tinggi</h3>
+                        <p>SVM sangat efektif untuk dataset dengan dimensi tinggi seperti EMG (64 fitur)</p>
+                    </div>
+                </div>
+                
+                <div class="feature-item">
+                    <div class="feature-icon">🎯</div>
+                    <div class="feature-text">
+                        <h3>Robust terhadap Overfitting</h3>
+                        <p>Regularisasi melalui parameter C membantu model generalisasi dengan baik</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Navigation -->
         <nav class="navigation-bottom">
-            <a href="{{ url_for('index') }}" class="button secondary">← Kembali ke Home</a>
+            <a href="{{ url_for('index') }}" class="secondary-button">
+                🏠 Kembali ke Dashboard
+            </a>
+            <a href="{{ url_for('predict') }}" class="primary">
+                🚀 Coba Prediksi
+            </a>
         </nav>
     </div>
 </body>

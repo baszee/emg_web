@@ -3,75 +3,108 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Prediksi Gestur</title>
+    <title>Prediksi Gestur - EMG Classifier</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
     <div class="container">
-        <h1>🔍 Input Data EMG</h1>
-        <p>Masukkan 64 nilai sinyal EMG (8 sensor × 8 time steps) yang dipisahkan oleh koma (CSV format).</p>
+        <!-- Header -->
+        <div class="hero">
+            <div class="hero-content">
+                <h1>🔍 Input Data EMG</h1>
+                <p class="hero-subtitle">
+                    Masukkan 64 nilai sinyal EMG yang dipisahkan dengan koma. Data ini merepresentasikan 
+                    aktivitas dari 8 sensor selama 8 interval waktu.
+                </p>
+            </div>
+        </div>
 
         {% if error %}
-        <div class="alert-error">{{ error }}</div>
+        <div class="alert-error">
+            ⚠️ {{ error }}
+        </div>
         {% endif %}
 
+        <!-- Input Form -->
         <section class="input-form">
-            <h2>Data Input (64 Fitur)</h2>
+            <h2>📝 Formulir Input Data</h2>
+            <p style="color: var(--text-light); margin-bottom: 1.5rem;">
+                Anda dapat memasukkan data manual atau menggunakan tombol "Generate Random Sample" 
+                untuk mencoba sistem dengan data acak.
+            </p>
+            
             <form id="predict-form" method="POST" action="{{ url_for('predict') }}">
-                <label for="emg_data" style="font-weight: 600; display: block; margin-bottom: 8px;">
-                    Data Sinyal (64 Angka):
+                <label for="emg_data">
+                    Data Sinyal EMG (64 Nilai):
                 </label>
                 
-                <textarea id="emg_data" name="emg_data" 
-                          placeholder="Pastikan Anda memasukkan 64 nilai numerik yang dipisahkan koma, contoh: 12.5, 13.0, 11.8, ..., 9.2" 
-                          required></textarea>
+                <textarea 
+                    id="emg_data" 
+                    name="emg_data" 
+                    placeholder="Contoh: 12.5, 13.0, 11.8, 14.2, 10.5, ..., 9.2 (Total harus 64 nilai yang dipisahkan koma)" 
+                    required></textarea>
                 
-                <div style="margin-top: 20px;">
-                    <button type="submit" class="button primary">Prediksi Gestur Sekarang</button>
-                    <!-- Tombol untuk generate data acak -->
-                    <button type="button" id="random-sample-btn" class="button secondary">
-                        Generate Random Sample
+                <div style="margin-top: 1.5rem; display: flex; gap: 1rem; flex-wrap: wrap;">
+                    <button type="submit" class="primary">
+                        🎯 Prediksi Gestur Sekarang
+                    </button>
+                    <button type="button" id="random-sample-btn" class="secondary">
+                        🎲 Generate Random Sample
                     </button>
                 </div>
             </form>
         </section>
         
+        <!-- Info Box -->
+        <div class="info-card">
+            <div class="card-icon">💡</div>
+            <h3 class="card-title">Tips Input Data</h3>
+            <div class="card-description">
+                <ul style="list-style: none; padding: 0;">
+                    <li style="margin-bottom: 0.5rem;">✓ Pastikan ada tepat 64 nilai numerik</li>
+                    <li style="margin-bottom: 0.5rem;">✓ Pisahkan setiap nilai dengan koma (,)</li>
+                    <li style="margin-bottom: 0.5rem;">✓ Gunakan angka desimal jika perlu (contoh: 12.5)</li>
+                    <li style="margin-bottom: 0.5rem;">✓ Tidak perlu khawatir dengan spasi ekstra</li>
+                </ul>
+            </div>
+        </div>
+        
+        <!-- Navigation -->
         <nav class="navigation-bottom">
-            <a href="{{ url_for('index') }}" class="button secondary">← Kembali ke Home</a>
+            <a href="{{ url_for('index') }}" class="secondary-button">
+                ← Kembali ke Dashboard
+            </a>
+            <a href="{{ url_for('model_info') }}" class="secondary-button">
+                🔬 Lihat Info Model
+            </a>
         </nav>
     </div>
 
-    <!-- Script untuk menangani pengisian data acak otomatis -->
+    <!-- JavaScript -->
     <script>
-        // Logika untuk mengirim permintaan POST ke Flask untuk menghasilkan data acak
+        // Handle random sample generation
         document.getElementById('random-sample-btn').addEventListener('click', function() {
-            // Hit route baru untuk generate data, yang kemudian me-redirect dengan data di URL
             fetch('{{ url_for("generate_random_sample") }}', {
                 method: 'POST'
             })
             .then(response => {
-                // Flask akan me-redirect dengan data acak di parameter URL
                 if (response.redirected) {
                     window.location.href = response.url;
                 }
             });
         });
 
-        // Logika untuk menangkap data acak dari URL dan mengisi form
+        // Auto-fill form if random data is in URL
         document.addEventListener('DOMContentLoaded', function() {
             const urlParams = new URLSearchParams(window.location.search);
             const randomData = urlParams.get('emg_data_random');
             const textarea = document.getElementById('emg_data');
             
             if (randomData) {
-                // Jika ada data acak di URL, masukkan ke textarea
                 textarea.value = randomData;
                 
-                // Hapus parameter dari URL agar bersih
+                // Clean URL
                 history.replaceState(null, '', window.location.pathname);
-                
-                // Opsional: Langsung submit form secara otomatis setelah data diisi (dinonaktifkan untuk kontrol user)
-                // document.getElementById('predict-form').submit();
             }
         });
     </script>

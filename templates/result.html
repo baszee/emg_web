@@ -3,69 +3,97 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hasil Prediksi</title>
+    <title>Hasil Prediksi - EMG Classifier</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
     <div class="container">
-        <h1>🎉 Hasil Prediksi Gestur</h1>
+        <!-- Header -->
+        <div class="hero">
+            <div class="hero-content">
+                <h1>🎉 Hasil Prediksi Gestur</h1>
+                <p class="hero-subtitle">
+                    Model AI telah menganalisis data EMG Anda dan menghasilkan prediksi dengan confidence score.
+                </p>
+            </div>
+        </div>
 
+        <!-- Prediction Result -->
         <section class="prediction-result">
-            <h2>Gesture Terdeteksi:</h2>
+            <h2>🎯 Gesture Terdeteksi:</h2>
             <div class="predicted-box">
                 <span class="gesture-name">{{ gesture }}</span>
             </div>
         </section>
 
-        <section class="confidence-scores">
-            <h2>Probabilitas / Confidence Score</h2>
-            <p>Model memprediksi kelas gestur dengan tingkat kepercayaan berikut:</p>
+        <!-- Confidence Scores -->
+        <section class="pipeline-section">
+            <h2 class="section-title">📊 Confidence Score (Probabilitas)</h2>
+            <p style="color: var(--text-light); margin-bottom: 1.5rem;">
+                Model memberikan skor kepercayaan untuk setiap kelas gestur. Semakin tinggi persentase, 
+                semakin yakin model dengan prediksinya.
+            </p>
             
             <div class="probability-list">
-                <!-- Looping melalui GESTURE_MAP untuk mendapatkan ID (0, 1, 2, 3) dan Nama -->
                 {% for class_id, class_name in gesture_map.items() %}
                 <div class="prob-item">
                     <span class="prob-label">{{ class_name }}:</span>
                     
-                    <!-- Menghitung persentase kepercayaan -->
                     {% set confidence = probabilities[class_id] * 100 %}
                     <span class="prob-value">{{ confidence | round(2) }}%</span>
-                    <!-- Mengatur lebar progress bar CSS -->
+                    
                     <div class="prob-bar" style="width: {{ confidence | round(0) }}%;"></div>
                 </div>
                 {% endfor %}
             </div>
         </section>
 
-        <section class="input-visualization">
-            <h2>Visualisasi Input Sinyal (8x8 Grid)</h2>
-            <p>Tampilan matriks 8x8 dari 64 nilai EMG yang Anda masukkan (Nilai absolut tertinggi berwarna lebih gelap, menunjukkan aktivitas otot). </p>
+        <!-- Input Visualization -->
+        <section class="pipeline-section">
+            <h2 class="section-title">🎨 Visualisasi Input Sinyal (8×8 Grid)</h2>
+            <p style="color: var(--text-light); margin-bottom: 1rem;">
+                Heatmap di bawah menampilkan 64 nilai EMG Anda dalam format grid 8×8. 
+                Warna yang lebih gelap menunjukkan aktivitas otot yang lebih kuat.
+            </p>
             
             <div class="emg-grid-container">
                 <div class="emg-grid">
-                    <!-- Tentukan nilai absolut maksimum dan minimum dari data untuk scaling Heatmap -->
                     {% set abs_vals = input_data_64 | map('abs') | list %}
                     {% set max_val = abs_vals | max %}
                     {% set min_val = abs_vals | min %}
                     
                     {% for value in input_data_64 %}
-                        <!-- Scaling nilai (dari 0 hingga 1) untuk opacity. Menggunakan abs() untuk Heatmap -->
                         {% set abs_val = value | abs %}
                         {% set scaled_opacity = (abs_val - min_val) / (max_val - min_val + 0.001) %}
                         
-                        <!-- Mengatur warna background (Heatmap) dan warna font (agar terbaca) -->
-                        <div class="grid-cell" style="background-color: rgb(255, 69, 0, {{ scaled_opacity }}); color: {% if scaled_opacity > 0.8 %} white {% else %} #333 {% endif %}"
-                             title="Nilai: {{ value | round(2) }}">
+                        <div class="grid-cell" 
+                             style="background: linear-gradient(135deg, 
+                                    rgba(52, 211, 153, {{ scaled_opacity }}), 
+                                    rgba(96, 165, 250, {{ scaled_opacity * 0.8 }})); 
+                                    color: {% if scaled_opacity > 0.6 %}white{% else %}#1e293b{% endif %};"
+                             title="Sensor Value: {{ value | round(2) }}">
                             {{ value | round(1) }}
                         </div>
                     {% endfor %}
                 </div>
             </div>
+            
+            <p style="color: var(--text-light); text-align: center; margin-top: 1rem; font-size: 0.9rem;">
+                💡 Hover pada setiap cell untuk melihat nilai eksak sensor
+            </p>
         </section>
 
+        <!-- Navigation -->
         <nav class="navigation-bottom">
-            <a href="{{ url_for('predict') }}" class="button primary">Coba Prediksi Lagi</a>
-            <a href="{{ url_for('index') }}" class="button secondary">Kembali ke Home</a>
+            <a href="{{ url_for('predict') }}" class="primary">
+                🔄 Coba Prediksi Lagi
+            </a>
+            <a href="{{ url_for('index') }}" class="secondary-button">
+                🏠 Kembali ke Dashboard
+            </a>
+            <a href="{{ url_for('model_info') }}" class="secondary-button">
+                🔬 Lihat Info Model
+            </a>
         </nav>
     </div>
 </body>

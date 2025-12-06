@@ -1,323 +1,711 @@
-/* Menggunakan Font yang Lebih Modern: Inter atau Poppins jika tersedia, default ke Sans-serif */
-@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap');
+/* ========================================
+   Modern EMG Classifier - Warm Milk Theme
+   ======================================== */
 
-/* --- 1. BASE STYLES & TYPOGRAPHY --- */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap');
+
+/* --- ROOT VARIABLES (Warm Color Palette) --- */
 :root {
-    --color-primary: #3b82f6; /* Biru Neon */
-    --color-secondary: #10b981; /* Hijau Teal */
-    --color-text: #1f2937; /* Abu-abu Gelap */
-    --color-background: #f8fafc; /* Latar Belakang Sangat Terang */
-    --color-card-bg: #ffffff;
-    --shadow-light: 0 4px 12px rgba(0, 0, 0, 0.08);
-    --shadow-hover: 0 8px 16px rgba(0, 0, 0, 0.15);
+    /* Primary Colors - Warm Green & Blue Milk */
+    --primary: #34d399;
+    --primary-dark: #10b981;
+    --primary-light: #6ee7b7;
+    --secondary: #60a5fa;
+    --secondary-dark: #3b82f6;
+    --accent: #fbbf24;
+    
+    /* Neutral Colors */
+    --dark: #1e293b;
+    --text: #334155;
+    --text-light: #64748b;
+    --text-lighter: #94a3b8;
+    
+    /* Background Colors */
+    --bg-gradient-start: #a7f3d0;
+    --bg-gradient-end: #7dd3fc;
+    --card-bg: #ffffff;
+    --light-bg: #f0fdf4;
+    --light-bg-blue: #e0f2fe;
+    
+    /* Border & Shadow */
+    --border: #d1fae5;
+    --border-light: #e2e8f0;
+    --shadow-sm: 0 4px 12px rgba(16, 185, 129, 0.08);
+    --shadow-md: 0 10px 30px rgba(16, 185, 129, 0.12);
+    --shadow-lg: 0 20px 60px rgba(0, 0, 0, 0.15);
+    --shadow-hover: 0 15px 40px rgba(16, 185, 129, 0.2);
+}
+
+/* --- GLOBAL RESET & BASE --- */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
 }
 
 body {
-    font-family: 'Poppins', sans-serif;
-    background-color: var(--color-background);
-    color: var(--color-text);
-    line-height: 1.6;
-    margin: 0;
-    padding: 0;
+    font-family: 'Inter', sans-serif;
+    background: linear-gradient(135deg, var(--bg-gradient-start) 0%, var(--bg-gradient-end) 100%);
     min-height: 100vh;
-    display: flex;
-    justify-content: center;
-    align-items: flex-start; /* Konten dimulai dari atas */
+    color: var(--text);
+    line-height: 1.6;
+    padding: 2rem 1rem;
 }
 
+/* --- CONTAINER --- */
 .container {
-    max-width: 960px;
-    width: 95%;
-    margin: 40px auto;
-    padding: 30px;
-    background-color: var(--color-card-bg);
-    border-radius: 16px;
-    box-shadow: var(--shadow-light);
-    transition: box-shadow 0.3s ease;
+    max-width: 1200px;
+    margin: 0 auto;
+    animation: fadeInUp 0.6s ease-out;
 }
 
-.container:hover {
-    box-shadow: var(--shadow-hover);
-}
-
-h1, h2 {
-    color: var(--color-primary);
+/* --- TYPOGRAPHY --- */
+h1, h2, h3 {
     font-weight: 700;
-    margin-top: 25px;
-    margin-bottom: 15px;
+    color: var(--dark);
+    line-height: 1.2;
 }
-h1 { font-size: 2.2em; border-bottom: none; }
-h2 { font-size: 1.6em; border-bottom: 1px solid #e2e8f0; padding-bottom: 8px;}
 
-p { margin-bottom: 15px; color: #4b5563; }
+h1 {
+    font-size: 2.5rem;
+    background: linear-gradient(135deg, var(--primary-dark), var(--secondary-dark));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 1rem;
+}
 
-/* --- 2. NAVIGATION & BUTTONS (Friendly) --- */
-.button {
-    display: inline-block;
-    padding: 12px 25px;
-    border-radius: 8px;
+h2 {
+    font-size: 1.8rem;
+    margin-bottom: 1.5rem;
+}
+
+h3 {
+    font-size: 1.4rem;
+    margin-bottom: 1rem;
+}
+
+p {
+    color: var(--text-light);
+    margin-bottom: 1rem;
+    line-height: 1.6;
+}
+
+/* --- CARDS --- */
+.hero, .info-card, .pipeline-section, .bottom-nav,
+.input-form, .prediction-result, .performance, .specs {
+    background: var(--card-bg);
+    border-radius: 20px;
+    padding: 2.5rem;
+    box-shadow: var(--shadow-md);
+    margin-bottom: 2rem;
+}
+
+.hero {
+    position: relative;
+    overflow: hidden;
+    padding: 3rem;
+}
+
+.hero::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    right: -10%;
+    width: 400px;
+    height: 400px;
+    background: linear-gradient(135deg, var(--primary-light), var(--secondary));
+    border-radius: 50%;
+    opacity: 0.15;
+    z-index: 0;
+}
+
+.hero-content {
+    position: relative;
+    z-index: 1;
+}
+
+.hero-subtitle {
+    font-size: 1.25rem;
+    color: var(--text-light);
+    margin-bottom: 2rem;
+}
+
+/* --- BUTTONS --- */
+.button, .cta-button, .primary, .secondary, .secondary-button {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.875rem 1.5rem;
+    border-radius: 10px;
     text-decoration: none;
     font-weight: 600;
     text-align: center;
-    transition: all 0.3s;
-    margin-right: 12px;
-    margin-bottom: 12px;
+    transition: all 0.3s ease;
     border: none;
     cursor: pointer;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
+    margin-right: 0.75rem;
+    margin-bottom: 0.75rem;
 }
 
-.button:hover {
-    transform: translateY(-3px); /* Efek terangkat lebih terasa */
-    box-shadow: 0 6px 10px rgba(0, 0, 0, 0.1);
-}
-
-.primary {
-    background: var(--color-primary);
+.cta-button, .primary, button[type="submit"] {
+    background: linear-gradient(135deg, var(--primary), var(--primary-dark));
     color: white;
+    font-size: 1.1rem;
+    padding: 1rem 2rem;
+    box-shadow: 0 10px 30px rgba(16, 185, 129, 0.3);
 }
 
-.primary:hover {
-    background: #2563eb;
+.cta-button:hover, .primary:hover, button[type="submit"]:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-hover);
 }
 
-.secondary {
-    background-color: #f1f5f9;
-    color: var(--color-text);
-    border: 1px solid #cbd5e1;
+.secondary, .secondary-button, button[type="button"] {
+    background: var(--light-bg);
+    color: var(--dark);
+    border: 2px solid var(--border);
 }
 
-.secondary:hover {
-    background-color: #e2e8f0;
+.secondary:hover, .secondary-button:hover, button[type="button"]:hover {
+    background: var(--dark);
+    color: white;
+    border-color: var(--dark);
 }
 
-.navigation-bottom {
-    margin-top: 40px;
-    padding-top: 20px;
-    border-top: 1px solid #e2e8f0;
+/* --- STATS CARDS --- */
+.hero-stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 1.5rem;
+    margin-top: 2rem;
 }
 
-/* --- 3. LAYOUT SPECIFIC: HOME/INDEX (Lebih Visual) --- */
-header {
+.stat-card {
     text-align: center;
-    padding-bottom: 20px;
-    margin-bottom: 20px;
-    border-bottom: 2px solid var(--color-primary);
-}
-header .subtitle {
-    font-size: 1.1em;
-    color: #64748b;
-    font-weight: 300;
-}
-.hero-action {
-    margin-top: 30px;
-    text-align: center;
+    padding: 1rem;
+    background: linear-gradient(135deg, var(--light-bg), var(--light-bg-blue));
+    border-radius: 12px;
+    transition: transform 0.3s ease;
 }
 
-.pipeline-diagram {
+.stat-card:hover {
+    transform: translateY(-5px);
+}
+
+.stat-number {
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--primary-dark);
+}
+
+.stat-label {
+    font-size: 0.875rem;
+    color: var(--text-light);
+    margin-top: 0.5rem;
+}
+
+/* --- INFO GRID --- */
+.info-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.info-card {
+    transition: all 0.3s ease;
+    border: 2px solid transparent;
+}
+
+.info-card:hover {
+    transform: translateY(-5px);
+    box-shadow: var(--shadow-lg);
+    border-color: var(--primary);
+}
+
+.card-icon {
+    width: 60px;
+    height: 60px;
+    background: linear-gradient(135deg, var(--primary), var(--secondary));
+    border-radius: 16px;
     display: flex;
-    justify-content: space-around;
     align-items: center;
-    margin: 40px 0;
-    font-size: 0.9em;
-    padding: 15px;
-    background-color: #f0f9ff;
-    border-radius: 10px;
+    justify-content: center;
+    font-size: 1.8rem;
+    margin-bottom: 1.5rem;
 }
 
-.pipeline-diagram .step {
-    background-color: var(--color-card-bg);
-    border: 1px solid var(--color-primary);
-    padding: 10px 15px;
-    border-radius: 6px;
+.card-title {
+    font-size: 1.4rem;
+    color: var(--dark);
+    margin-bottom: 1rem;
+}
+
+.card-description {
+    color: var(--text-light);
+    line-height: 1.6;
+    font-size: 0.95rem;
+}
+
+/* --- PIPELINE --- */
+.section-title {
+    font-size: 1.8rem;
+    font-weight: 700;
+    color: var(--dark);
+    margin-bottom: 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.pipeline {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+    margin-top: 2rem;
+}
+
+.pipeline-step {
+    background: linear-gradient(135deg, var(--light-bg), var(--light-bg-blue));
+    border-radius: 16px;
+    padding: 1.5rem;
     text-align: center;
+    position: relative;
+    transition: all 0.3s ease;
+}
+
+.pipeline-step:hover {
+    background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+    color: white;
+    transform: scale(1.05);
+}
+
+.pipeline-step::after {
+    content: '→';
+    position: absolute;
+    right: -1.5rem;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 1.5rem;
+    color: var(--text-lighter);
+}
+
+.pipeline-step:last-child::after {
+    content: '';
+}
+
+.step-number {
+    display: inline-block;
+    width: 30px;
+    height: 30px;
+    background: var(--primary);
+    color: white;
+    border-radius: 50%;
+    font-weight: 700;
+    line-height: 30px;
+    margin-bottom: 0.5rem;
+}
+
+.pipeline-step:hover .step-number {
+    background: white;
+    color: var(--primary);
+}
+
+.step-label {
     font-weight: 600;
-    color: var(--color-primary);
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    font-size: 0.9rem;
 }
 
-.pipeline-diagram span {
-    font-size: 1.8em;
-    color: #94a3b8;
-    margin: 0 10px;
+/* --- FEATURES GRID --- */
+.features-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 2rem;
 }
 
-/* --- 4. LAYOUT SPECIFIC: PREDICT & FORM --- */
-textarea {
-    width: 98%;
-    padding: 15px;
-    border: 2px solid #cbd5e1;
-    border-radius: 8px;
+.feature-item {
+    background: var(--card-bg);
+    border-radius: 16px;
+    padding: 1.5rem;
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+    box-shadow: var(--shadow-sm);
+    transition: all 0.3s ease;
+    border: 2px solid var(--border-light);
+}
+
+.feature-item:hover {
+    transform: translateX(5px);
+    box-shadow: var(--shadow-md);
+    border-color: var(--primary);
+}
+
+.feature-icon {
+    width: 40px;
+    height: 40px;
+    background: var(--light-bg);
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2rem;
+    flex-shrink: 0;
+}
+
+.feature-text h3 {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--dark);
+    margin-bottom: 0.3rem;
+}
+
+.feature-text p {
+    font-size: 0.85rem;
+    color: var(--text-light);
+    line-height: 1.4;
+}
+
+/* --- FORMS & INPUT --- */
+textarea, input[type="text"] {
+    width: 100%;
+    padding: 1rem;
+    border: 2px solid var(--border);
+    border-radius: 12px;
+    font-family: 'Inter', monospace;
+    font-size: 0.95rem;
     resize: vertical;
-    font-family: monospace;
     min-height: 180px;
-    font-size: 1em;
-    transition: border-color 0.3s;
+    transition: all 0.3s ease;
+    background: var(--light-bg);
 }
 
-textarea:focus {
-    border-color: var(--color-primary);
+textarea:focus, input[type="text"]:focus {
     outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(52, 211, 153, 0.1);
 }
 
+label {
+    font-weight: 600;
+    display: block;
+    margin-bottom: 0.5rem;
+    color: var(--dark);
+}
+
+/* --- ALERTS --- */
 .alert-error {
-    background-color: #fee2e2;
-    color: #dc2626;
-    padding: 15px;
-    border-radius: 8px;
-    border: 1px solid #fca5a5;
-    margin-bottom: 20px;
+    background: linear-gradient(135deg, #fee2e2, #fecaca);
+    color: #991b1b;
+    padding: 1rem;
+    border-radius: 12px;
+    border-left: 4px solid #dc2626;
+    margin-bottom: 1.5rem;
     font-weight: 600;
 }
 
-/* --- 5. LAYOUT SPECIFIC: RESULT & VISUALISASI --- */
-/* Predicted Class */
+.alert-warning {
+    background: linear-gradient(135deg, #fef3c7, #fde68a);
+    color: #92400e;
+    padding: 1rem;
+    border-radius: 12px;
+    border-left: 4px solid #f59e0b;
+    margin-bottom: 1.5rem;
+    font-weight: 600;
+}
+
+/* --- RESULT PAGE --- */
 .predicted-box {
     text-align: center;
-    padding: 40px;
-    margin: 30px 0;
-    border: 3px solid var(--color-secondary);
-    border-radius: 12px;
-    background-color: #ecfdf5; /* Hijau muda */
-    box-shadow: var(--shadow-light);
+    padding: 3rem;
+    margin: 2rem 0;
+    border: 3px solid var(--primary);
+    border-radius: 16px;
+    background: linear-gradient(135deg, var(--light-bg), var(--light-bg-blue));
+    box-shadow: var(--shadow-md);
 }
 
 .gesture-name {
-    font-size: 3.5em;
-    font-weight: 700;
-    color: var(--color-secondary);
+    font-size: 3.5rem;
+    font-weight: 800;
+    background: linear-gradient(135deg, var(--primary), var(--secondary));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
     letter-spacing: 1px;
 }
 
-/* Probabilitas (Confidence Scores) */
+/* --- PROBABILITY BARS --- */
 .probability-list {
-    margin-top: 20px;
-    padding: 15px 0;
+    margin-top: 1.5rem;
 }
 
 .prob-item {
     display: flex;
     align-items: center;
-    margin-bottom: 12px;
-    font-size: 1.1em;
-    background-color: #f1f5f9;
-    padding: 8px;
-    border-radius: 6px;
+    margin-bottom: 1rem;
+    padding: 0.75rem;
+    background: var(--light-bg);
+    border-radius: 10px;
+    transition: all 0.3s ease;
+}
+
+.prob-item:hover {
+    background: linear-gradient(135deg, var(--light-bg), var(--light-bg-blue));
+    transform: translateX(5px);
 }
 
 .prob-label {
     flex-basis: 150px;
     font-weight: 600;
+    color: var(--dark);
 }
 
 .prob-value {
     flex-basis: 80px;
     text-align: right;
-    font-weight: 600;
-    color: var(--color-primary);
+    font-weight: 700;
+    color: var(--primary-dark);
 }
 
 .prob-bar {
     height: 10px;
     margin-left: 10px;
-    background-image: linear-gradient(to right, var(--color-primary), var(--color-secondary));
+    background: linear-gradient(90deg, var(--primary), var(--secondary));
     border-radius: 5px;
     transition: width 0.5s ease;
+    box-shadow: 0 2px 8px rgba(52, 211, 153, 0.3);
 }
 
-/* 8x8 EMG Grid (Heatmap) */
+/* --- EMG GRID HEATMAP --- */
 .emg-grid {
     display: grid;
     grid-template-columns: repeat(8, 1fr);
     grid-template-rows: repeat(8, 1fr);
     width: 100%;
     aspect-ratio: 1 / 1;
-    border: 2px solid #cbd5e1;
-    margin: 20px auto;
+    border: 3px solid var(--border);
+    margin: 2rem auto;
     max-width: 600px;
-    border-radius: 8px;
-    overflow: hidden; /* Menjaga sudut melengkung */
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: var(--shadow-md);
 }
 
 .grid-cell {
     display: flex;
     justify-content: center;
     align-items: center;
-    border: 1px solid rgba(0, 0, 0, 0.05); /* Garis pemisah yang sangat halus */
-    font-size: 0.75em;
+    border: 1px solid rgba(0, 0, 0, 0.05);
+    font-size: 0.75rem;
     font-weight: 600;
-    color: var(--color-text);
-    transition: background-color 0.3s;
+    transition: all 0.2s ease;
     cursor: default;
 }
+
 .grid-cell:hover {
-    box-shadow: inset 0 0 0 2px var(--color-primary);
+    box-shadow: inset 0 0 0 2px var(--primary);
+    z-index: 10;
+    transform: scale(1.1);
 }
 
-/* --- 6. LAYOUT SPECIFIC: MODEL INFO --- */
+/* --- MODEL INFO / METRICS --- */
 .metric-box-group {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 20px;
-    margin: 20px 0;
+    gap: 1.5rem;
+    margin: 2rem 0;
 }
 
 .metric-card {
-    background-color: #fff;
-    padding: 20px;
-    border-radius: 10px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-    border-left: 5px solid var(--color-secondary);
+    background: linear-gradient(135deg, var(--light-bg), var(--light-bg-blue));
+    padding: 1.5rem;
+    border-radius: 12px;
+    box-shadow: var(--shadow-sm);
+    border-left: 5px solid var(--primary);
+    transition: all 0.3s ease;
+}
+
+.metric-card:hover {
+    transform: translateY(-5px);
+    box-shadow: var(--shadow-md);
 }
 
 .metric-label {
     display: block;
-    color: #64748b;
-    font-size: 0.9em;
-    margin-bottom: 5px;
+    color: var(--text-light);
+    font-size: 0.875rem;
+    margin-bottom: 0.5rem;
 }
 
 .metric-value {
-    font-size: 2em;
+    font-size: 2rem;
     font-weight: 700;
-    color: var(--color-primary);
+    color: var(--primary-dark);
 }
 
+/* --- TABLES --- */
 table {
     width: 100%;
     border-collapse: collapse;
-    margin-top: 15px;
-    border: 1px solid #e2e8f0;
-    border-radius: 8px;
+    margin-top: 1.5rem;
+    border-radius: 12px;
     overflow: hidden;
+    box-shadow: var(--shadow-sm);
 }
 
 table th, table td {
-    padding: 12px;
+    padding: 1rem;
     text-align: left;
-    border-bottom: 1px solid #e2e8f0;
+    border-bottom: 1px solid var(--border-light);
 }
 
 table th {
-    background-color: #f8fafc;
+    background: linear-gradient(135deg, var(--light-bg), var(--light-bg-blue));
     font-weight: 600;
-    width: 35%;
-    color: var(--color-text);
+    color: var(--dark);
 }
 
+table tr:hover {
+    background: var(--light-bg);
+}
+
+/* --- CONFUSION MATRIX IMAGE --- */
+.confusion-matrix-img {
+    max-width: 100%;
+    height: auto;
+    border-radius: 12px;
+    box-shadow: var(--shadow-md);
+    margin: 1.5rem 0;
+}
+
+/* --- NAVIGATION --- */
+.navigation-bottom, .bottom-nav {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+    justify-content: center;
+    padding: 2rem;
+    border-top: 2px solid var(--border);
+}
+
+/* --- LANDING PAGE SPECIFIC --- */
+.full-screen-center {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    text-align: center;
+}
+
+.full-screen-center h1 {
+    font-size: 3.5rem;
+    margin-bottom: 0.5rem;
+}
+
+.full-screen-center h2 {
+    font-size: 1.8rem;
+    font-weight: 300;
+    margin-bottom: 1rem;
+    color: var(--text-light);
+}
+
+.full-screen-center p {
+    font-size: 1.1rem;
+    max-width: 700px;
+    margin-bottom: 2rem;
+}
+
+.small-text {
+    font-size: 0.875rem;
+    opacity: 0.7;
+    margin-top: 2rem;
+}
+
+/* --- ANIMATIONS --- */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes pulse {
+    0%, 100% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.8;
+    }
+}
+
+/* --- RESPONSIVE DESIGN --- */
 @media (max-width: 768px) {
-    .pipeline-diagram {
-        flex-direction: column;
-        align-items: stretch;
+    body {
+        padding: 1rem;
     }
-    .pipeline-diagram span {
-        display: none; /* Sembunyikan panah di mobile */
+    
+    .hero, .info-card, .pipeline-section {
+        padding: 1.5rem;
     }
-    .pipeline-diagram .step {
-        margin: 5px 0;
+    
+    h1 {
+        font-size: 1.8rem;
     }
+    
+    h2 {
+        font-size: 1.4rem;
+    }
+    
+    .hero-subtitle {
+        font-size: 1rem;
+    }
+    
+    .gesture-name {
+        font-size: 2.5rem;
+    }
+    
+    .pipeline {
+        grid-template-columns: 1fr;
+    }
+    
+    .pipeline-step::after {
+        content: '↓';
+        right: 50%;
+        top: auto;
+        bottom: -1.5rem;
+        transform: translateX(50%);
+    }
+    
+    .pipeline-step:last-child::after {
+        content: '';
+    }
+    
     .metric-box-group {
         grid-template-columns: 1fr;
     }
+    
+    .hero-stats {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    
+    .full-screen-center h1 {
+        font-size: 2.5rem;
+    }
 }
+
+/* --- UTILITY CLASSES --- */
+.text-center { text-align: center; }
+.mt-1 { margin-top: 0.5rem; }
+.mt-2 { margin-top: 1rem; }
+.mt-3 { margin-top: 1.5rem; }
+.mb-1 { margin-bottom: 0.5rem; }
+.mb-2 { margin-bottom: 1rem; }
+.mb-3 { margin-bottom: 1.5rem; }

@@ -173,4 +173,4 @@ def generate_random_sample():
 
 # Jalankan aplikasi
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(debug=True) 

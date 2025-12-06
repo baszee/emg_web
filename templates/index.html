@@ -8,61 +8,153 @@
 </head>
 <body>
     <div class="container">
-        <header>
-            <h1><span style="color: var(--color-secondary);">🦾 Klasifikasi Gestur Tangan EMG</span></h1>
-            <p class="subtitle">Sistem Cerdas Bertenaga SVM untuk Analisis Gerakan Tubuh Non-Invasif</p>
-        </header>
-
-        <section class="glossary">
-            <h2>Konsep Dasar & Teknologi</h2>
-            
-            <div class="box-text">
-                <h3>Apa itu Sinyal EMG?</h3>
-                <p><strong>Elektromiografi (EMG)</strong> adalah teknik yang digunakan untuk merekam aktivitas listrik yang dihasilkan oleh otot rangka. Setiap kali Anda menggerakkan tangan atau jari, otot akan menghasilkan sinyal listrik kecil. Sinyal inilah yang ditangkap oleh sensor untuk digunakan sebagai data input.</p>
+        <!-- Hero Section -->
+        <div class="hero">
+            <div class="hero-content">
+                <h1>🤖 Klasifikasi Gestur Tangan dengan AI</h1>
+                <p class="hero-subtitle">
+                    Sistem pintar yang dapat mengenali 4 gerakan tangan berbeda menggunakan sinyal elektrik dari otot (EMG). 
+                    Teknologi yang sama digunakan di prostetik canggih dan kontrol robotik!
+                </p>
+                
+                <a href="{{ url_for('predict') }}" class="cta-button">
+                    🚀 Coba Prediksi Sekarang
+                    <span>→</span>
+                </a>
+                
+                <div class="hero-stats">
+                    <div class="stat-card">
+                        <div class="stat-number">4</div>
+                        <div class="stat-label">Jenis Gestur</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number">64</div>
+                        <div class="stat-label">Input Fitur</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number">95%+</div>
+                        <div class="stat-label">Akurasi</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number">SVM</div>
+                        <div class="stat-label">AI Model</div>
+                    </div>
+                </div>
             </div>
-            
-            <div class="box-text">
-                <h3>Pembentukan 64 Fitur</h3>
-                <p>Data dikumpulkan dari **8 sensor** EMG yang ditempatkan di lengan. Setiap sensor direkam selama **8 *time slice*** (potongan waktu), yang kemudian diekstrak fitur-fiturnya. Kombinasi ini menghasilkan total **64 fitur** numerik (8 sensor × 8 *time slice* = 64 dimensi) yang menjadi vektor input untuk model klasifikasi.</p>
-            </div>
-
-            <div class="box-text">
-                <h3>Mengapa Support Vector Machine (SVM)?</h3>
-                <p>SVM dipilih karena sangat efektif dalam menangani masalah klasifikasi biner dan multi-kelas, khususnya pada data yang memiliki dimensi tinggi (seperti 64 fitur) dan tidak terpisah secara linier. Dengan menggunakan **kernel trick**, SVM mampu memetakan data ke ruang dimensi yang lebih tinggi agar dapat diklasifikasikan dengan batas keputusan yang optimal.</p>
-            </div>
-
-        </section>
+        </div>
         
-        <section class="overview" style="margin-top: 30px;">
-            <h2>✨ Tujuan Proyek</h2>
-            <p>Proyek ini bertujuan mendemonstrasikan kemampuan **Machine Learning (SVM)** dalam mengolah sinyal **Elektromiografi (EMG)** untuk identifikasi gerakan tangan secara akurat.</p>
-        </section>
+        <!-- Info Cards -->
+        <div class="info-grid">
+            <div class="info-card">
+                <div class="card-icon">⚡</div>
+                <h3 class="card-title">Apa itu Sinyal EMG?</h3>
+                <p class="card-description">
+                    EMG (Electromyography) adalah sinyal listrik kecil yang dihasilkan otot saat berkontraksi. 
+                    Seperti sidik jari, setiap gerakan menghasilkan pola sinyal yang unik. Sistem ini membaca 
+                    pola tersebut untuk mengenali gerakan Anda.
+                </p>
+            </div>
+            
+            <div class="info-card">
+                <div class="card-icon">📊</div>
+                <h3 class="card-title">Kenapa 64 Angka?</h3>
+                <p class="card-description">
+                    Sistem menggunakan 8 sensor yang dipasang di lengan. Setiap sensor merekam data dalam 8 
+                    interval waktu berbeda. Total: 8 sensor × 8 waktu = 64 titik data yang membentuk "signature" 
+                    unik untuk setiap gerakan.
+                </p>
+            </div>
+            
+            <div class="info-card">
+                <div class="card-icon">🧠</div>
+                <h3 class="card-title">Kecerdasan Buatan</h3>
+                <p class="card-description">
+                    Model SVM (Support Vector Machine) adalah algoritma AI yang mahir mengenali pola kompleks. 
+                    Setelah belajar dari ribuan contoh, model dapat membedakan gerakan Rock ✊, Scissors ✌️, 
+                    Paper ✋, dan OK 👌 dengan sangat akurat.
+                </p>
+            </div>
+        </div>
         
-        <div class="hero-action">
-            <a href="{{ url_for('predict') }}" class="button primary">
-                Mulai Uji Prediksi Sekarang <span style="margin-left: 5px;">→</span>
+        <!-- Pipeline Section -->
+        <div class="pipeline-section">
+            <h2 class="section-title">🔄 Cara Kerja Sistem</h2>
+            <p style="color: var(--text-light); margin-bottom: 1rem;">
+                Dari sinyal otot mentah hingga prediksi gerakan final, ini adalah perjalanan data Anda:
+            </p>
+            
+            <div class="pipeline">
+                <div class="pipeline-step">
+                    <div class="step-number">1</div>
+                    <div class="step-label">Akuisisi Sinyal<br>8 Sensor EMG</div>
+                </div>
+                <div class="pipeline-step">
+                    <div class="step-number">2</div>
+                    <div class="step-label">Preprocessing<br>& Normalisasi</div>
+                </div>
+                <div class="pipeline-step">
+                    <div class="step-number">3</div>
+                    <div class="step-label">Ekstraksi Fitur<br>64 Dimensi</div>
+                </div>
+                <div class="pipeline-step">
+                    <div class="step-number">4</div>
+                    <div class="step-label">Klasifikasi SVM<br>AI Prediction</div>
+                </div>
+                <div class="pipeline-step">
+                    <div class="step-number">5</div>
+                    <div class="step-label">Hasil & Visualisasi<br>Interface</div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Features -->
+        <div class="pipeline-section">
+            <h2 class="section-title">✨ Fitur Unggulan</h2>
+            
+            <div class="features-grid">
+                <div class="feature-item">
+                    <div class="feature-icon">🎯</div>
+                    <div class="feature-text">
+                        <h3>Akurasi Tinggi</h3>
+                        <p>Model telah dilatih dengan 11.678+ sampel data real untuk hasil prediksi terbaik</p>
+                    </div>
+                </div>
+                
+                <div class="feature-item">
+                    <div class="feature-icon">⚡</div>
+                    <div class="feature-text">
+                        <h3>Prediksi Instant</h3>
+                        <p>Hasil klasifikasi muncul dalam hitungan milidetik setelah input data</p>
+                    </div>
+                </div>
+                
+                <div class="feature-item">
+                    <div class="feature-icon">📈</div>
+                    <div class="feature-text">
+                        <h3>Confidence Score</h3>
+                        <p>Lihat tingkat kepercayaan model untuk setiap prediksi yang dibuat</p>
+                    </div>
+                </div>
+                
+                <div class="feature-item">
+                    <div class="feature-icon">🎨</div>
+                    <div class="feature-text">
+                        <h3>Visualisasi Heatmap</h3>
+                        <p>Representasi visual 8×8 dari aktivitas sensor untuk interpretasi mudah</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Bottom Navigation -->
+        <div class="bottom-nav">
+            <a href="{{ url_for('model_info') }}" class="secondary-button">
+                🔬 Detail Model & Metrik
+            </a>
+            <a href="{{ url_for('predict') }}" class="secondary-button">
+                🚀 Mulai Prediksi
             </a>
         </div>
-
-        <section class="model-info">
-            <h2>⚙️ Alur Kerja Sistem</h2>
-            <div class="pipeline-diagram">
-                <div class="step">Akuisisi Sinyal EMG (64D)</div> 
-                <span>→</span>
-                <div class="step">Standard Scaling & Feature Engineering</div>
-                <span>→</span>
-                <div class="step">Model SVM (Core Classifier)</div>
-                <span>→</span>
-                <div class="step">Antarmuka Web (Hasil & Probabilitas)</div>
-            </div>
-            
-
-            <p>Seluruh sistem *backend* ditenagai oleh **Python Flask** untuk antarmuka web dan **Scikit-learn** untuk operasi model dan *scaling* data.</p>
-        </section>
-
-        <nav class="navigation-bottom">
-            <a href="{{ url_for('model_info') }}" class="button secondary">🔬 Lihat Detail Metrik dan Parameter Model</a>
-        </nav>
     </div>
 </body>
 </html>
