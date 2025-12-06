@@ -16,7 +16,7 @@ mean_scaler = np.zeros(64)
 std_scaler = np.ones(64)     
 akurasi_test = 0.0           
 parameter_terbaik = {'kernel': 'Simulasi', 'C': 'N/A', 'gamma': 'N/A'} 
-MODE_SIMULASI = True 
+MODE_SIMULASI = True # Default: Berjalan dalam mode simulasi
 
 # ==================================
 # ⚙️ 2. INISIALISASI APLIKASI
@@ -61,16 +61,18 @@ except Exception as e:
 @app.route('/')
 def landing():
     """Halaman Awal (Landing Page) dengan tombol Masuk."""
-    return render_template('landing.html') # Memanggil file HTML baru
+    return render_template('landing.html') 
 
 @app.route('/dashboard')
 def index():
-    """Halaman Utama/Dashboard (Overview, ini adalah konten index.html lama)."""
+    """Halaman Utama/Dashboard (Overview)."""
+    # Tidak lagi mengumpulkan dan mengirim variabel 'info' ke template
     return render_template('index.html')
 
 @app.route('/model-info')
 def model_info():
     """Halaman Informasi Detail Model (Metrik)."""
+    # Info dikumpulkan di sini, karena memang dibutuhkan di template model_info.html
     info = {
         'akurasi': akurasi_test,
         'parameter': parameter_terbaik,
@@ -83,9 +85,19 @@ def model_info():
     return render_template('model_info.html', info=info)
 
 
+# app.py
+
+# ... (Semua kode di atas, termasuk variabel global dan load model, tetap sama)
+# ...
+
 @app.route('/predict', methods=['GET', 'POST'])
 def predict():
     """Halaman Input Data EMG dan Prediksi."""
+    
+    # ------------------------------------------------------------------
+    # Cek apakah ada parameter URL yang memaksa simulasi (dari generate-random-sample)
+    is_forced_simulasi = request.args.get('force_sim', 'false') == 'true'
+    # ------------------------------------------------------------------
     
     if request.method == 'POST':
         # 1. Ambil data dari formulir
@@ -102,7 +114,8 @@ def predict():
             return render_template('predict.html', error=f"Input harus tepat 64 nilai. Anda memasukkan {len(data_list)} nilai.")
 
         # --- LOGIKA PREDIKSI ---
-        if MODE_SIMULASI:
+        # Gunakan simulasi jika MODE_SIMULASI aktif ATAU jika simulasi dipaksa
+        if MODE_SIMULASI or is_forced_simulasi: 
             # Mode Simulasi: Berikan hasil acak dan probabilitas merata
             prediction_class = random.choice(list(GESTURE_MAP.keys())) 
             probabilities = np.ones(len(GESTURE_MAP)) / len(GESTURE_MAP)
@@ -110,7 +123,7 @@ def predict():
             result_gesture = f"{GESTURE_MAP.get(prediction_class, 'Kelas Tidak Diketahui')} (SIMULASI)"
             
         else:
-            # Mode Produksi: Gunakan Model SC yang Valid
+            # Mode Produksi: Gunakan Model SC yang Valid (untuk data non-random)
             final_input_raw = np.array(data_list).reshape(1, -1)
             final_input_scaled = (final_input_raw - mean_scaler) / std_scaler 
 
@@ -121,9 +134,8 @@ def predict():
             if hasattr(model, 'predict_proba'):
                  probabilities = model.predict_proba(final_input_scaled)[0]
             else:
-                 # Fallback/simulasi probabilitas jika model tidak mendukung predict_proba
-                 probabilities = np.ones(len(GESTURE_MAP)) * 0.0 # Placeholder
-                 probabilities[prediction_class] = 1.0 # Kelas yang diprediksi diberi probabilitas 1.0
+                 probabilities = np.ones(len(GESTURE_MAP)) * 0.0
+                 probabilities[prediction_class] = 1.0
 
             result_gesture = GESTURE_MAP.get(prediction_class, "Kelas Tidak Diketahui")
         
@@ -141,16 +153,23 @@ def predict():
 
 @app.route('/generate-random-sample', methods=['POST'])
 def generate_random_sample():
-    """
-    Menghasilkan 64 nilai EMG acak dan mengirimkannya ke /predict.
-    """
-    random_data = [random.uniform(-50.0, 50.0) for _ in range(64)]
-    
+    """Menghasilkan 64 nilai EMG acak dan mengirimkannya ke /predict, 
+       sekaligus memaksa mode simulasi untuk hasil prediksinya."""
+       
+    # 1. Menghasilkan 64 sampel dari DISTRIBUSI NORMAL atau rentang umum
+    if not MODE_SIMULASI:
+        # Gunakan denormalisasi untuk menghasilkan input yang lebih "masuk akal"
+        scaled_random_data = np.random.normal(loc=0.0, scale=1.0, size=64)
+        final_random_data = (scaled_random_data * std_scaler) + mean_scaler
+    else:
+        # Jika simulasi global, gunakan rentang acak umum
+        final_random_data = [random.uniform(-50.0, 50.0) for _ in range(64)]
+
     # Konversi ke string format CSV
-    emg_data_str = ', '.join([f"{x:.2f}" for x in random_data])
+    emg_data_str = ', '.join([f"{x:.2f}" for x in final_random_data.tolist()])
     
-    # Kirim data ini sebagai GET request ke route /predict agar bisa di-prefill
-    return redirect(url_for('predict', emg_data_random=emg_data_str))
+    # 2. Kirim data dan tambahkan 'force_sim=true'
+    return redirect(url_for('predict', emg_data_random=emg_data_str, force_sim='true'))
 
 # Jalankan aplikasi
 if __name__ == '__main__':

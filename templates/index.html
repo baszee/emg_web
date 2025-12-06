@@ -3,46 +3,65 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>EMG Gesture Classifier - Home</title>
+    <title>Dashboard - EMG Gesture Classifier</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
     <div class="container">
         <header>
-            <h1><span style="color: var(--color-secondary);">💪</span> EMG Gesture Classifier</h1>
-            <p class="subtitle">Sistem Cerdas untuk Klasifikasi Gerakan Tangan Manusia</p>
+            <h1><span style="color: var(--color-secondary);">🦾 Klasifikasi Gestur Tangan EMG</span></h1>
+            <p class="subtitle">Sistem Cerdas Bertenaga SVM untuk Analisis Gerakan Tubuh Non-Invasif</p>
         </header>
 
-        <section class="overview">
-            <h2>Tentang Proyek</h2>
-            <p>Aplikasi ini adalah implementasi *real-time* dari proyek Sistem Cerdas yang menggunakan **Support Vector Machine (SVM)** untuk mengklasifikasikan empat gestur tangan utama: **Rock, Scissors, Paper, dan OK**.</p>
-            <p>Data input berupa sinyal **Elektromiografi (EMG)** yang berasal dari 8 sensor yang dicatat selama 8 *time slice*, menghasilkan **64 fitur** numerik untuk setiap prediksi.</p>
+        <section class="glossary">
+            <h2>Konsep Dasar & Teknologi</h2>
+            
+            <div class="box-text">
+                <h3>Apa itu Sinyal EMG?</h3>
+                <p><strong>Elektromiografi (EMG)</strong> adalah teknik yang digunakan untuk merekam aktivitas listrik yang dihasilkan oleh otot rangka. Setiap kali Anda menggerakkan tangan atau jari, otot akan menghasilkan sinyal listrik kecil. Sinyal inilah yang ditangkap oleh sensor untuk digunakan sebagai data input.</p>
+            </div>
+            
+            <div class="box-text">
+                <h3>Pembentukan 64 Fitur</h3>
+                <p>Data dikumpulkan dari **8 sensor** EMG yang ditempatkan di lengan. Setiap sensor direkam selama **8 *time slice*** (potongan waktu), yang kemudian diekstrak fitur-fiturnya. Kombinasi ini menghasilkan total **64 fitur** numerik (8 sensor × 8 *time slice* = 64 dimensi) yang menjadi vektor input untuk model klasifikasi.</p>
+            </div>
+
+            <div class="box-text">
+                <h3>Mengapa Support Vector Machine (SVM)?</h3>
+                <p>SVM dipilih karena sangat efektif dalam menangani masalah klasifikasi biner dan multi-kelas, khususnya pada data yang memiliki dimensi tinggi (seperti 64 fitur) dan tidak terpisah secara linier. Dengan menggunakan **kernel trick**, SVM mampu memetakan data ke ruang dimensi yang lebih tinggi agar dapat diklasifikasikan dengan batas keputusan yang optimal.</p>
+            </div>
+
+        </section>
+        
+        <section class="overview" style="margin-top: 30px;">
+            <h2>✨ Tujuan Proyek</h2>
+            <p>Proyek ini bertujuan mendemonstrasikan kemampuan **Machine Learning (SVM)** dalam mengolah sinyal **Elektromiografi (EMG)** untuk identifikasi gerakan tangan secara akurat.</p>
         </section>
         
         <div class="hero-action">
             <a href="{{ url_for('predict') }}" class="button primary">
-                Mulai Prediksi Gestur Sekarang
+                Mulai Uji Prediksi Sekarang <span style="margin-left: 5px;">→</span>
             </a>
         </div>
 
         <section class="model-info">
-            <h2>Alur Kerja & Teknologi</h2>
+            <h2>⚙️ Alur Kerja Sistem</h2>
             <div class="pipeline-diagram">
-                <div class="step">Sensor EMG (64 Fitur)</div> 
+                <div class="step">Akuisisi Sinyal EMG (64D)</div> 
                 <span>→</span>
-                <div class="step">Preprocessing & Scaling</div>
+                <div class="step">Standard Scaling & Feature Engineering</div>
                 <span>→</span>
-                <div class="step">Model SVM (Klasifikasi)</div>
+                <div class="step">Model SVM (Core Classifier)</div>
                 <span>→</span>
-                <div class="step">Tampilan Web (Hasil & Confidence)</div>
+                <div class="step">Antarmuka Web (Hasil & Probabilitas)</div>
             </div>
             
 
-            <p>Seluruh sistem *backend* diimplementasikan menggunakan Python Flask, Scikit-learn, dan di-*deploy* di PythonAnywhere.</p>
+            <p>Seluruh sistem *backend* ditenagai oleh **Python Flask** untuk antarmuka web dan **Scikit-learn** untuk operasi model dan *scaling* data.</p>
         </section>
 
         <nav class="navigation-bottom">
-            <a href="{{ url_for('model_info') }}" class="button secondary">Detail Metrik Model</a>
+            <a href="{{ url_for('model_info') }}" class="button secondary">🔬 Lihat Detail Metrik dan Parameter Model</a>
         </nav>
     </div>
 </body>
