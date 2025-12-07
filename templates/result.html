@@ -24,6 +24,19 @@
             <div class="predicted-box">
                 <span class="gesture-name">{{ gesture }}</span>
             </div>
+            
+            {% if expected_gesture %}
+            <div style="text-align: center; margin-top: 1rem;">
+                <p style="color: var(--text-light); font-size: 1rem;">
+                    Expected: <strong style="color: var(--primary-dark);">{{ expected_gesture }}</strong>
+                    {% if expected_gesture in gesture %}
+                    <span style="color: var(--secondary); font-weight: 700;">✓ MATCH!</span>
+                    {% else %}
+                    <span style="color: var(--accent); font-weight: 700;">✗ DIFFERENT</span>
+                    {% endif %}
+                </p>
+            </div>
+            {% endif %}
         </section>
 
         <!-- Confidence Scores -->
@@ -65,12 +78,10 @@
                     {% for value in input_data_64 %}
                         {% set abs_val = value | abs %}
                         {% set scaled_opacity = (abs_val - min_val) / (max_val - min_val + 0.001) %}
+                        {% set text_color = 'white' if scaled_opacity > 0.6 else '#1e293b' %}
                         
                         <div class="grid-cell" 
-                             style="background: linear-gradient(135deg, 
-                                    rgba(52, 211, 153, {{ scaled_opacity }}), 
-                                    rgba(96, 165, 250, {{ scaled_opacity * 0.8 }})); 
-                                    color: {% if scaled_opacity > 0.6 %}white{% else %}#1e293b{% endif %};"
+                             style="background: linear-gradient(135deg, rgba(52, 211, 153, {{ scaled_opacity }}), rgba(96, 165, 250, {{ scaled_opacity * 0.8 }})); color: {{ text_color }};"
                              title="Sensor Value: {{ value | round(2) }}">
                             {{ value | round(1) }}
                         </div>

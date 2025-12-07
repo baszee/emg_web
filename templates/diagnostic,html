@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Diagnostic - EMG Classifier</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <div class="hero">
+            <div class="hero-content">
+                <h1>🔍 System Diagnostic</h1>
+                <p class="hero-subtitle">
+                    Debug tool untuk mengidentifikasi masalah pada model dan data generation
+                </p>
+            </div>
+        </div>
+
+        <!-- System Status -->
+        <section class="pipeline-section">
+            <h2 class="section-title">⚙️ System Status</h2>
+            
+            <div class="metric-box-group">
+                <div class="metric-card">
+                    <span class="metric-label">Mode</span>
+                    <span class="metric-value" style="font-size: 1.2rem;">{{ diagnostics.mode }}</span>
+                </div>
+                <div class="metric-card">
+                    <span class="metric-label">Model Loaded</span>
+                    <span class="metric-value" style="font-size: 1.2rem;">
+                        {% if diagnostics.model_loaded %}✓ YES{% else %}✗ NO{% endif %}
+                    </span>
+                </div>
+                <div class="metric-card">
+                    <span class="metric-label">Sample Data</span>
+                    <span class="metric-value" style="font-size: 1.2rem;">
+                        {% if diagnostics.sample_data_available %}✓ Available{% else %}✗ None{% endif %}
+                    </span>
+                </div>
+            </div>
+        </section>
+
+        <!-- Scaler Stats -->
+        <section class="pipeline-section">
+            <h2 class="section-title">📊 Scaler Statistics</h2>
+            
+            <table>
+                <tr>
+                    <th>Parameter</th>
+                    <th>Value</th>
+                </tr>
+                <tr>
+                    <td>Mean Scaler Range</td>
+                    <td>{{ diagnostics.scaler_stats.mean_range }}</td>
+                </tr>
+                <tr>
+                    <td>Std Scaler Range</td>
+                    <td>{{ diagnostics.scaler_stats.std_range }}</td>
+                </tr>
+            </table>
+        </section>
+
+        <!-- Test Results -->
+        {% if diagnostics.test_results %}
+        <section class="pipeline-section">
+            <h2 class="section-title">🧪 Synthetic Data Test Results</h2>
+            <p style="color: var(--text-light); margin-bottom: 1rem;">
+                Testing model dengan synthetic data untuk setiap kelas. Jika banyak yang mismatch, 
+                kemungkinan synthetic generator atau model training ada masalah.
+            </p>
+            
+            <table>
+                <thead>
+                    <tr>
+                        <th>Expected Gesture</th>
+                        <th>Predicted Gesture</th>
+                        <th>Status</th>
+                        <th>Data Stats</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for result in diagnostics.test_results %}
+                    <tr style="background: {% if result.match %}rgba(52, 211, 153, 0.1){% else %}rgba(251, 191, 36, 0.1){% endif %};">
+                        <td><strong>{{ result.expected }}</strong></td>
+                        <td><strong>{{ result.predicted }}</strong></td>
+                        <td>
+                            {% if result.match %}
+                            <span style="color: var(--primary); font-weight: 700;">✓ MATCH</span>
+                            {% else %}
+                            <span style="color: var(--accent); font-weight: 700;">✗ MISMATCH</span>
+                            {% endif %}
+                        </td>
+                        <td style="font-family: monospace; font-size: 0.85rem;">{{ result.data_stats }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            
+            {% set match_count = diagnostics.test_results | selectattr('match') | list | length %}
+            {% set total_count = diagnostics.test_results | length %}
+            <p style="margin-top: 1rem; font-weight: 600;">
+                Accuracy: {{ match_count }}/{{ total_count }} 
+                ({{ (match_count / total_count * 100) | round(1) }}%)
+            </p>
+        </section>
+        {% endif %}
+
+        <!-- Recommendations -->
+        <section class="pipeline-section">
+            <h2 class="section-title">💡 Recommendations</h2>
+            
+            <div class="features-grid">
+                {% if not diagnostics.model_loaded %}
+                <div class="feature-item">
+                    <div class="feature-icon">⚠️</div>
+                    <div class="feature-text">
+                        <h3>Model Not Loaded</h3>
+                        <p>Pastikan file 'model_svm_emg.joblib' ada dan valid. Aplikasi saat ini berjalan dalam mode SIMULASI.</p>
+                    </div>
+                </div>
+                {% endif %}
+                
+                {% if not diagnostics.sample_data_available %}
+                <div class="feature-item">
+                    <div class="feature-icon">💾</div>
+                    <div class="feature-text">
+                        <h3>No Sample Data</h3>
+                        <p>Model tidak menyimpan sample data asli. Random sample menggunakan synthetic data yang mungkin kurang akurat. Re-train model dengan menyimpan 'sample_data'.</p>
+                    </div>
+                </div>
+                {% endif %}
+                
+                {% if diagnostics.test_results %}
+                    {% set match_count = diagnostics.test_results | selectattr('match') | list | length %}
+                    {% if match_count < 3 %}
+                    <div class="feature-item">
+                        <div class="feature-icon">🔧</div>
+                        <div class="feature-text">
+                            <h3>Low Synthetic Accuracy</h3>
+                            <p>Synthetic data generator menghasilkan prediksi yang buruk ({{ match_count }}/4 correct). Ini normal jika model sangat sensitif terhadap pola data. Gunakan sample data asli untuk hasil lebih baik.</p>
+                        </div>
+                    </div>
+                    {% endif %}
+                {% endif %}
+                
+                <div class="feature-item">
+                    <div class="feature-icon">📝</div>
+                    <div class="feature-text">
+                        <h3>How to Fix</h3>
+                        <p>Saat training model, simpan beberapa sample dari test set ke dalam dictionary 'sample_data' dan include dalam model file. Lihat dokumentasi untuk contoh code.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Navigation -->
+        <nav class="navigation-bottom">
+            <a href="{{ url_for('index') }}" class="secondary-button">
+                🏠 Back to Dashboard
+            </a>
+            <a href="{{ url_for('predict') }}" class="primary">
+                🚀 Try Prediction
+            </a>
+        </nav>
+    </div>
+</body>
+</html>

@@ -29,8 +29,8 @@
         <section class="input-form">
             <h2>📝 Formulir Input Data</h2>
             <p style="color: var(--text-light); margin-bottom: 1.5rem;">
-                Anda dapat memasukkan data manual atau menggunakan tombol "Generate Random Sample" 
-                untuk mencoba sistem dengan data acak.
+                Anda dapat memasukkan data manual atau menggunakan tombol generator untuk mencoba 
+                sistem dengan sample data.
             </p>
             
             <form id="predict-form" method="POST" action="{{ url_for('predict') }}">
@@ -44,16 +44,63 @@
                     placeholder="Contoh: 12.5, 13.0, 11.8, 14.2, 10.5, ..., 9.2 (Total harus 64 nilai yang dipisahkan koma)" 
                     required></textarea>
                 
-                <div style="margin-top: 1.5rem; display: flex; gap: 1rem; flex-wrap: wrap;">
+                <div style="margin-top: 1.5rem;">
                     <button type="submit" class="primary">
                         🎯 Prediksi Gestur Sekarang
-                    </button>
-                    <button type="button" id="random-sample-btn" class="secondary">
-                        🎲 Generate Random Sample
                     </button>
                 </div>
             </form>
         </section>
+        
+        <!-- Sample Generator Options -->
+        <div class="pipeline-section">
+            <h2 class="section-title">🎲 Generate Sample Data</h2>
+            <p style="color: var(--text-light); margin-bottom: 1.5rem;">
+                Klik salah satu tombol di bawah untuk mengisi form dengan sample data EMG. 
+                Tombol "Random" akan memilih gestur secara acak, sedangkan tombol lainnya akan 
+                generate sample untuk gestur spesifik.
+            </p>
+            
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
+                <!-- Random Sample Button -->
+                <form method="POST" action="{{ url_for('generate_random_sample') }}" style="margin: 0;">
+                    <button type="submit" class="secondary" style="width: 100%; margin: 0;">
+                        🎲 Random Gestur
+                    </button>
+                </form>
+                
+                <!-- Specific Gesture Buttons -->
+                <form method="POST" action="{{ url_for('generate_specific_sample', gesture_class=0) }}" style="margin: 0;">
+                    <button type="submit" class="secondary" style="width: 100%; margin: 0;">
+                        ✊ Rock Sample
+                    </button>
+                </form>
+                
+                <form method="POST" action="{{ url_for('generate_specific_sample', gesture_class=1) }}" style="margin: 0;">
+                    <button type="submit" class="secondary" style="width: 100%; margin: 0;">
+                        ✌️ Scissors Sample
+                    </button>
+                </form>
+                
+                <form method="POST" action="{{ url_for('generate_specific_sample', gesture_class=2) }}" style="margin: 0;">
+                    <button type="submit" class="secondary" style="width: 100%; margin: 0;">
+                        ✋ Paper Sample
+                    </button>
+                </form>
+                
+                <form method="POST" action="{{ url_for('generate_specific_sample', gesture_class=3) }}" style="margin: 0;">
+                    <button type="submit" class="secondary" style="width: 100%; margin: 0;">
+                        👌 OK Sample
+                    </button>
+                </form>
+            </div>
+            
+            <p style="color: var(--text-lighter); font-size: 0.875rem; margin-top: 1rem;">
+                💡 <strong>Tip:</strong> Jika model Anda menyimpan sample data asli, generator akan 
+                menggunakan data tersebut. Jika tidak, sistem akan generate data sintetik dengan 
+                karakteristik yang berbeda untuk setiap gestur.
+            </p>
+        </div>
         
         <!-- Info Box -->
         <div class="info-card">
@@ -82,26 +129,36 @@
 
     <!-- JavaScript -->
     <script>
-        // Handle random sample generation
-        document.getElementById('random-sample-btn').addEventListener('click', function() {
-            fetch('{{ url_for("generate_random_sample") }}', {
-                method: 'POST'
-            })
-            .then(response => {
-                if (response.redirected) {
-                    window.location.href = response.url;
-                }
-            });
-        });
-
         // Auto-fill form if random data is in URL
         document.addEventListener('DOMContentLoaded', function() {
             const urlParams = new URLSearchParams(window.location.search);
             const randomData = urlParams.get('emg_data_random');
+            const expectedGesture = urlParams.get('expected_gesture');
             const textarea = document.getElementById('emg_data');
             
             if (randomData) {
                 textarea.value = randomData;
+                
+                // Tampilkan notifikasi jika ada expected gesture
+                if (expectedGesture) {
+                    const notification = document.createElement('div');
+                    notification.style.cssText = `
+                        background: linear-gradient(135deg, var(--light-bg), var(--light-bg-blue));
+                        padding: 1rem;
+                        border-radius: 12px;
+                        border-left: 4px solid var(--primary);
+                        margin-bottom: 1.5rem;
+                        font-weight: 600;
+                        color: var(--dark);
+                    `;
+                    notification.innerHTML = `
+                        ℹ️ Sample data untuk <strong>${expectedGesture}</strong> telah dimuat. 
+                        Klik "Prediksi Gestur Sekarang" untuk melihat hasilnya!
+                    `;
+                    
+                    const form = document.querySelector('.input-form');
+                    form.insertBefore(notification, form.firstChild);
+                }
                 
                 // Clean URL
                 history.replaceState(null, '', window.location.pathname);
