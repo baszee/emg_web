@@ -1,249 +1,186 @@
 # ==================================
 # 📚 1. IMPORTS & KONFIGURASI
 # ==================================
+import os # <-- TAMBAHKAN INI
 import joblib
 import numpy as np
-import random 
-from flask import Flask, render_template, request, redirect, url_for, session
+import random
+import time
+import io
+import csv
+from flask import Flask, render_template, request, redirect, url_for, session, jsonify
 
 # --- KONSTANTA & VARIABEL GLOBAL ---
-MODEL_PATH = 'model_svm_emg.joblib'
-GESTURE_MAP = {0: 'Rock ✊', 1: 'Scissors ✌️', 2: 'Paper ✋', 3: 'OK 👌'} 
+# Dapatkan directory tempat file app.py ini berada
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+# Gabungkan path: BASE_DIR + nama file
+MODEL_PATH = os.path.join(BASE_DIR, 'model_svm_emg.joblib') # <-- UBAH BARIS INI!
+GESTURE_MAP = {0: 'Rock ✊', 1: 'Scissors ✌️', 2: 'Paper ✋', 3: 'OK 👌'}
 
-# --- PLACEHOLDERS (Digunakan jika Mode Simulasi Aktif) ---
-model = None 
-mean_scaler = np.zeros(64)   
-std_scaler = np.ones(64)     
-akurasi_test = 0.0           
-parameter_terbaik = {'kernel': 'Simulasi', 'C': 'N/A', 'gamma': 'N/A'} 
-sample_data = None  # Dictionary berisi sample data per kelas
-MODE_SIMULASI = True # Default: Berjalan dalam mode simulasi
+# --- PLACEHOLDERS ---
+model = None
+mean_scaler = np.zeros(64)
+std_scaler = np.ones(64)
+akurasi_test = 0.0
+parameter_terbaik = {'kernel': 'Simulasi', 'C': 'N/A', 'gamma': 'N/A'}
+sample_data = None
+MODE_SIMULASI = True
 
 # ==================================
 # ⚙️ 2. INISIALISASI APLIKASI
 # ==================================
 app = Flask(__name__)
-app.secret_key = 'your-secret-key-here-change-this-in-production'  # Untuk session
+app.secret_key = 'emg-classifier-secret-key-change-in-production'
 
 # ==================================
-# 💾 3. LOAD MODEL DENGAN FALLBACK
+# 💾 3. LOAD MODEL
 # ==================================
 try:
-    # Model Anda menyimpan model, scaler, dan metadata dalam satu dictionary
     data_model = joblib.load(MODEL_PATH)
-    
-    # Inisialisasi dengan data yang dimuat
     model = data_model['model']
     mean_scaler = data_model['mean_scaler']
     std_scaler = data_model['std_scaler']
     
-    # Pastikan GESTURE_MAP berbentuk Dictionary
     if isinstance(data_model['nama_gesture'], dict):
         GESTURE_MAP = data_model['nama_gesture']
     else:
-        # Jika bukan dict, buat mapping dari 0, 1, 2, 3
         GESTURE_MAP = dict(enumerate(data_model['nama_gesture']))
-
+    
     akurasi_test = data_model.get('akurasi_test', 0.0)
     parameter_terbaik = data_model.get('parameter_terbaik', parameter_terbaik)
-    
-    # Load sample data jika tersedia
     sample_data = data_model.get('sample_data', None)
     
     MODE_SIMULASI = False
+    print("✓ Model loaded successfully (Production Mode)")
     
-    print("✓ Model, Scaler, dan Metadata berhasil dimuat. Mode: Produksi.")
-    if sample_data is not None:
-        print(f"✓ Sample data tersedia untuk {len(sample_data)} kelas.")
-    else:
-        print("⚠ Sample data tidak tersedia. Random sample akan menggunakan synthetic data.")
-
 except Exception as e:
-    # Tangkap semua jenis error (FileNotFound, KeyError, dll.)
-    print(f"!!! GAGAL MEMUAT MODEL ({e}). Aplikasi berjalan dalam mode SIMULASI.")
-    print("!!! Prediksi akan mengembalikan hasil acak/default. Silakan masukkan model yang valid.")
-
+    print(f"⚠ Model load failed: {e}. Running in SIMULATION mode.")
 
 # ==================================
-# 🎲 HELPER: GENERATE BALANCED RANDOM SAMPLE
+# 🎲 4. HELPER: GENERATE SAMPLE
 # ==================================
 def generate_balanced_random_sample(gesture_class=None):
-    """
-    Generate random EMG sample dengan distribusi yang lebih balanced.
+    """Generate realistic EMG sample"""
     
-    Args:
-        gesture_class (int, optional): Kelas gestur spesifik (0-3). 
-                                       Jika None, pilih random dari semua kelas.
-    
-    Returns:
-        tuple: (emg_data_array, gesture_class)
-    """
-    
-    # 1. Jika sample_data tersedia, ambil dari situ (BEST OPTION)
     if sample_data is not None and not MODE_SIMULASI:
-        # Pilih kelas
         if gesture_class is None:
             gesture_class = random.choice(list(sample_data.keys()))
         
-        # Validasi kelas
-        if gesture_class not in sample_data or len(sample_data[gesture_class]) == 0:
-            gesture_class = random.choice(list(sample_data.keys()))
-        
-        # Ambil random sample dari kelas tersebut
-        samples = sample_data[gesture_class]
-        random_idx = random.randint(0, len(samples) - 1)
-        random_sample = samples[random_idx]
-        
-        print(f"✓ Using real sample for class {gesture_class}: {GESTURE_MAP[gesture_class]}")
-        return random_sample, gesture_class
+        if gesture_class in sample_data and len(sample_data[gesture_class]) > 0:
+            samples = sample_data[gesture_class]
+            random_idx = random.randint(0, len(samples) - 1)
+            return samples[random_idx], gesture_class
     
-    # 2. Fallback: Generate synthetic data dengan pola berbeda per kelas
-    print("⚠ Using synthetic data (no sample_data available)")
-    
+    # Fallback: Synthetic data
     if gesture_class is None:
         gesture_class = random.randint(0, 3)
     
-    # IMPROVED: Karakteristik yang lebih berbeda antar kelas
-    # Menggunakan pola spasial berbeda untuk setiap gestur
-    
-    if gesture_class == 0:  # Rock ✊ - Aktivitas tinggi di semua sensor
+    if gesture_class == 0:  # Rock
         base_values = np.random.uniform(20, 35, 64)
         noise = np.random.normal(0, 5, 64)
-        
-    elif gesture_class == 1:  # Scissors ✌️ - Aktivitas tinggi di sensor tertentu (pola V)
+    elif gesture_class == 1:  # Scissors
         base_values = np.random.uniform(5, 15, 64)
-        # Tingkatkan aktivitas di sensor 2, 3 (jari telunjuk & tengah)
         for i in range(8):
             base_values[i*8 + 2] += random.uniform(15, 25)
             base_values[i*8 + 3] += random.uniform(15, 25)
         noise = np.random.normal(0, 3, 64)
-        
-    elif gesture_class == 2:  # Paper ✋ - Aktivitas merata tapi lebih rendah
+    elif gesture_class == 2:  # Paper
         base_values = np.random.uniform(8, 18, 64)
         noise = np.random.normal(0, 4, 64)
-        
-    else:  # OK 👌 - Aktivitas tinggi di ibu jari & telunjuk
+    else:  # OK
         base_values = np.random.uniform(10, 20, 64)
-        # Tingkatkan aktivitas di sensor 1, 2 (ibu jari & telunjuk)
         for i in range(8):
             base_values[i*8 + 1] += random.uniform(10, 20)
             base_values[i*8 + 2] += random.uniform(10, 20)
         noise = np.random.normal(0, 4, 64)
     
     emg_data = base_values + noise
-    
-    # CRITICAL FIX: Jangan scale ulang jika model butuh data raw!
-    # Hanya normalize jika model trained dengan normalized data
-    if not MODE_SIMULASI and np.std(std_scaler) > 0.1:
-        # Model menggunakan standardization, jadi kita perlu match distribusinya
-        # Tapi JANGAN denormalize, biarkan dalam rentang raw values
-        pass  # Data sudah dalam rentang yang sesuai
-    
-    print(f"✓ Generated synthetic sample for class {gesture_class}: {GESTURE_MAP[gesture_class]}")
-    print(f"  Sample stats - Mean: {np.mean(emg_data):.2f}, Std: {np.std(emg_data):.2f}")
-    
     return emg_data, gesture_class
 
-
 # ==================================
-# --- ROUTE APLIKASI ---
+# 🌐 5. ROUTES - BASIC PAGES
 # ==================================
 
 @app.route('/')
 def landing():
-    """Halaman Awal (Landing Page) dengan tombol Masuk."""
-    return render_template('landing.html') 
+    return render_template('landing.html')
 
 @app.route('/dashboard')
 def index():
-    """Halaman Utama/Dashboard (Overview)."""
     return render_template('index.html')
 
 @app.route('/model-info')
 def model_info():
-    """Halaman Informasi Detail Model (Metrik)."""
-    # Info dikumpulkan di sini, karena memang dibutuhkan di template model_info.html
     info = {
         'akurasi': akurasi_test,
         'parameter': parameter_terbaik,
         'kernel': parameter_terbaik.get('kernel', 'N/A'),
         'C': parameter_terbaik.get('C', 'N/A'),
         'gamma': parameter_terbaik.get('gamma', 'N/A'),
-        'data_info': '11.678 samples, Split 80/20',
-        'simulasi_mode': MODE_SIMULASI 
+        'total_samples': 11678,
+        'train_samples': 9341,
+        'test_samples': 2337,
+        'split_ratio': '80:20',
+        'training_time': '219.07',
+        'cv_accuracy': 0.9148,
+        'per_class_accuracy': {
+            'Rock': 0.945,
+            'Scissors': 0.976,
+            'Paper': 0.902,
+            'OK': 0.884
+        },
+        'simulasi_mode': MODE_SIMULASI
     }
     return render_template('model_info.html', info=info)
 
-
 @app.route('/predict', methods=['GET', 'POST'])
 def predict():
-    """Halaman Input Data EMG dan Prediksi."""
-    
-    # Cek apakah ada parameter URL yang memaksa simulasi (dari generate-random-sample)
     is_forced_simulasi = request.args.get('force_sim', 'false') == 'true'
     expected_gesture = request.args.get('expected_gesture', None)
     
     if request.method == 'POST':
-        # 1. Ambil data dari formulir
         emg_data_str = request.form.get('emg_data')
         
-        # 2. Pre-processing Input (String 64 Angka)
         try:
             data_list = [float(x.strip()) for x in emg_data_str.split(',')]
         except ValueError:
-            return render_template('predict.html', error="Input harus berupa 64 nilai numerik yang dipisahkan koma.")
-            
-        # 3. Validasi Jumlah Fitur
+            return render_template('predict.html', 
+                                 error="Input harus 64 nilai numerik dipisahkan koma")
+        
         if len(data_list) != 64:
-            return render_template('predict.html', error=f"Input harus tepat 64 nilai. Anda memasukkan {len(data_list)} nilai.")
-
-        # --- LOGIKA PREDIKSI ---
-        # Gunakan simulasi jika MODE_SIMULASI aktif ATAU jika simulasi dipaksa
-        if MODE_SIMULASI or is_forced_simulasi: 
-            # Mode Simulasi: Berikan hasil acak dan probabilitas merata
-            prediction_class = random.choice(list(GESTURE_MAP.keys())) 
+            return render_template('predict.html',
+                                 error=f"Input harus tepat 64 nilai (Anda input {len(data_list)})")
+        
+        if MODE_SIMULASI or is_forced_simulasi:
+            prediction_class = random.choice(list(GESTURE_MAP.keys()))
             probabilities = np.ones(len(GESTURE_MAP)) / len(GESTURE_MAP)
-            
-            result_gesture = f"{GESTURE_MAP.get(prediction_class, 'Kelas Tidak Diketahui')} (SIMULASI)"
-            
+            result_gesture = f"{GESTURE_MAP.get(prediction_class, 'Unknown')} (SIMULASI)"
         else:
-            # Mode Produksi: Gunakan Model yang Valid
             final_input_raw = np.array(data_list).reshape(1, -1)
-            final_input_scaled = (final_input_raw - mean_scaler) / std_scaler 
-
-            # Prediksi (kelas dan probabilitas)
+            final_input_scaled = (final_input_raw - mean_scaler) / std_scaler
+            
             prediction_class = model.predict(final_input_scaled)[0]
             
-            # Cek apakah model mendukung predict_proba
             if hasattr(model, 'predict_proba'):
-                 probabilities = model.predict_proba(final_input_scaled)[0]
+                probabilities = model.predict_proba(final_input_scaled)[0]
             else:
-                 probabilities = np.ones(len(GESTURE_MAP)) * 0.0
-                 probabilities[prediction_class] = 1.0
-
-            result_gesture = GESTURE_MAP.get(prediction_class, "Kelas Tidak Diketahui")
+                probabilities = np.zeros(len(GESTURE_MAP))
+                probabilities[prediction_class] = 1.0
+            
+            result_gesture = GESTURE_MAP.get(prediction_class, "Unknown")
         
-        # Render halaman hasil
-        return render_template('result.html', 
-                               gesture=result_gesture, 
-                               probabilities=probabilities.tolist(),
-                               gesture_map=GESTURE_MAP,
-                               input_data_64=data_list,
-                               expected_gesture=expected_gesture) 
-
-    # Jika method adalah GET, tampilkan formulir input
+        return render_template('result.html',
+                             gesture=result_gesture,
+                             probabilities=probabilities.tolist(),
+                             gesture_map=GESTURE_MAP,
+                             input_data_64=data_list,
+                             expected_gesture=expected_gesture)
+    
     emg_data_random = request.args.get('emg_data_random', '')
     return render_template('predict.html', emg_data_default=emg_data_random)
 
-
 @app.route('/generate-random-sample', methods=['POST'])
 def generate_random_sample():
-    """
-    Menghasilkan 64 nilai EMG yang lebih balanced dan mengirimkannya ke /predict.
-    Mendukung pemilihan gestur spesifik jika diminta.
-    """
-    
-    # Ambil parameter gesture_class jika ada (dari tombol spesifik)
     gesture_class_str = request.form.get('gesture_class', None)
     
     if gesture_class_str is not None:
@@ -254,82 +191,205 @@ def generate_random_sample():
     else:
         gesture_class = None
     
-    # Generate sample yang lebih balanced
     emg_data_array, selected_gesture = generate_balanced_random_sample(gesture_class)
-    
-    # Konversi ke string format CSV
     emg_data_str = ', '.join([f"{x:.2f}" for x in emg_data_array.tolist()])
     
-    # Kirim data dengan informasi gesture yang diharapkan
-    return redirect(url_for('predict', 
-                           emg_data_random=emg_data_str, 
+    return redirect(url_for('predict',
+                           emg_data_random=emg_data_str,
                            force_sim='false',
                            expected_gesture=GESTURE_MAP.get(selected_gesture, 'Unknown')))
 
-
-# ==================================
-# 🆕 ROUTE BARU: DIAGNOSTIC TOOLS
-# ==================================
-@app.route('/diagnostic')
-def diagnostic():
-    """Halaman diagnostic untuk check model & data."""
-    
-    diagnostics = {
-        'mode': 'SIMULASI' if MODE_SIMULASI else 'PRODUKSI',
-        'model_loaded': model is not None,
-        'sample_data_available': sample_data is not None,
-        'scaler_stats': {
-            'mean_range': f"{np.min(mean_scaler):.2f} to {np.max(mean_scaler):.2f}",
-            'std_range': f"{np.min(std_scaler):.2f} to {np.max(std_scaler):.2f}",
-        },
-        'gesture_map': GESTURE_MAP,
-        'test_results': []
-    }
-    
-    # Test prediction dengan synthetic data untuk setiap kelas
-    if not MODE_SIMULASI and model is not None:
-        for class_id in range(4):
-            # Generate sample
-            test_data, expected_class = generate_balanced_random_sample(class_id)
-            
-            # Predict
-            test_input = test_data.reshape(1, -1)
-            test_scaled = (test_input - mean_scaler) / std_scaler
-            predicted_class = model.predict(test_scaled)[0]
-            
-            diagnostics['test_results'].append({
-                'expected': GESTURE_MAP[expected_class],
-                'predicted': GESTURE_MAP[predicted_class],
-                'match': expected_class == predicted_class,
-                'data_stats': f"mean={np.mean(test_data):.2f}, std={np.std(test_data):.2f}"
-            })
-    
-    return render_template('diagnostic.html', diagnostics=diagnostics)
-
-
-# ==================================
-# --- ROUTE APLIKASI ---
-# ==================================
 @app.route('/generate-specific-sample/<int:gesture_class>', methods=['POST'])
 def generate_specific_sample(gesture_class):
-    """Generate sample untuk gestur spesifik."""
-    
     if gesture_class not in GESTURE_MAP:
         return redirect(url_for('predict'))
     
-    # Generate sample untuk kelas spesifik
     emg_data_array, _ = generate_balanced_random_sample(gesture_class)
-    
-    # Konversi ke string format CSV
     emg_data_str = ', '.join([f"{x:.2f}" for x in emg_data_array.tolist()])
     
-    # Kirim data dengan informasi gesture yang diharapkan
-    return redirect(url_for('predict', 
-                           emg_data_random=emg_data_str, 
+    return redirect(url_for('predict',
+                           emg_data_random=emg_data_str,
                            force_sim='false',
                            expected_gesture=GESTURE_MAP.get(gesture_class, 'Unknown')))
 
+# ==================================
+# 🆕 6. NEW FEATURE #1: CONFIDENCE TRACKER
+# ==================================
 
-# Jalankan aplikasi
+@app.route('/confidence-tracker')
+def confidence_tracker():
+    return render_template('confidence_tracker.html')
+
+@app.route('/api/predict-with-tracking', methods=['POST'])
+def predict_with_tracking():
+    try:
+        data = request.get_json()
+        emg_data_str = data.get('emg_data', '')
+        
+        data_list = [float(x.strip()) for x in emg_data_str.split(',')]
+        
+        if len(data_list) != 64:
+            return jsonify({'error': 'Must have exactly 64 values'}), 400
+        
+        if MODE_SIMULASI:
+            prediction_class = random.choice(list(GESTURE_MAP.keys()))
+            probabilities = np.random.dirichlet(np.ones(4))
+        else:
+            final_input_raw = np.array(data_list).reshape(1, -1)
+            final_input_scaled = (final_input_raw - mean_scaler) / std_scaler
+            
+            prediction_class = model.predict(final_input_scaled)[0]
+            probabilities = model.predict_proba(final_input_scaled)[0]
+        
+        result_gesture = GESTURE_MAP.get(prediction_class, 'Unknown')
+        max_confidence = float(max(probabilities))
+        
+        # Store in session
+        if 'prediction_history' not in session:
+            session['prediction_history'] = []
+        
+        session['prediction_history'].append({
+            'gesture': result_gesture,
+            'confidence': max_confidence,
+            'all_probs': probabilities.tolist(),
+            'timestamp': time.time()
+        })
+        
+        session['prediction_history'] = session['prediction_history'][-10:]
+        session.modified = True
+        
+        return jsonify({
+            'success': True,
+            'prediction': result_gesture,
+            'confidence': max_confidence,
+            'probabilities': probabilities.tolist(),
+            'history': session['prediction_history']
+        })
+        
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/clear-history', methods=['POST'])
+def clear_history():
+    session['prediction_history'] = []
+    session.modified = True
+    return jsonify({'success': True})
+
+# ==================================
+# 🆕 7. NEW FEATURE #2: GESTURE COMPARISON
+# ==================================
+
+@app.route('/compare-gestures')
+def compare_gestures():
+    return render_template('compare_gestures.html', gestures=GESTURE_MAP)
+
+@app.route('/api/compare', methods=['POST'])
+def compare_gestures_api():
+    try:
+        data = request.get_json()
+        gesture1_id = int(data.get('gesture1'))
+        gesture2_id = int(data.get('gesture2'))
+        
+        if gesture1_id not in GESTURE_MAP or gesture2_id not in GESTURE_MAP:
+            return jsonify({'error': 'Invalid gesture IDs'}), 400
+        
+        sample1, _ = generate_balanced_random_sample(gesture1_id)
+        sample2, _ = generate_balanced_random_sample(gesture2_id)
+        
+        diff = np.abs(sample1 - sample2)
+        similarity_score = float(1 - (np.mean(diff) / np.max([np.max(sample1), np.max(sample2)])))
+        
+        return jsonify({
+            'gesture1': GESTURE_MAP[gesture1_id],
+            'gesture2': GESTURE_MAP[gesture2_id],
+            'heatmap1': sample1.reshape(8, 8).tolist(),
+            'heatmap2': sample2.reshape(8, 8).tolist(),
+            'difference': diff.reshape(8, 8).tolist(),
+            'similarity_score': similarity_score * 100
+        })
+        
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+# ==================================
+# 🆕 8. NEW FEATURE #3: BATCH PREDICTION
+# ==================================
+
+@app.route('/batch-predict', methods=['GET', 'POST'])
+def batch_predict():
+    if request.method == 'POST':
+        if 'csv_file' not in request.files:
+            return render_template('batch_predict.html', 
+                                 error='No file uploaded')
+        
+        file = request.files['csv_file']
+        
+        if file.filename == '':
+            return render_template('batch_predict.html',
+                                 error='No file selected')
+        
+        if not file.filename.endswith('.csv'):
+            return render_template('batch_predict.html',
+                                 error='File must be CSV format')
+        
+        try:
+            stream = io.StringIO(file.stream.read().decode("UTF8"), newline=None)
+            csv_input = csv.reader(stream)
+            
+            results = []
+            for idx, row in enumerate(csv_input):
+                if len(row) != 64:
+                    continue
+                
+                try:
+                    data_array = np.array([float(x) for x in row]).reshape(1, -1)
+                    
+                    if MODE_SIMULASI:
+                        prediction_class = random.choice(list(GESTURE_MAP.keys()))
+                        confidence = random.uniform(0.7, 0.99)
+                    else:
+                        data_scaled = (data_array - mean_scaler) / std_scaler
+                        prediction_class = model.predict(data_scaled)[0]
+                        probs = model.predict_proba(data_scaled)[0]
+                        confidence = float(max(probs))
+                    
+                    results.append({
+                        'sample_id': idx + 1,
+                        'prediction': GESTURE_MAP[prediction_class],
+                        'confidence': round(confidence * 100, 2)
+                    })
+                    
+                except (ValueError, IndexError):
+                    continue
+            
+            if not results:
+                return render_template('batch_predict.html',
+                                     error='No valid samples found in CSV')
+            
+            # Calculate summary
+            gesture_counts = {}
+            for r in results:
+                gesture = r['prediction']
+                gesture_counts[gesture] = gesture_counts.get(gesture, 0) + 1
+            
+            summary = {
+                'total_samples': len(results),
+                'gesture_distribution': gesture_counts,
+                'avg_confidence': round(np.mean([r['confidence'] for r in results]), 2)
+            }
+            
+            return render_template('batch_predict.html',
+                                 results=results,
+                                 summary=summary)
+            
+        except Exception as e:
+            return render_template('batch_predict.html',
+                                 error=f'Error processing file: {str(e)}')
+    
+    return render_template('batch_predict.html')
+
+# ==================================
+# 🚀 9. RUN APP
+# ==================================
 if __name__ == '__main__':
     app.run(debug=True)

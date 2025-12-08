@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Confidence Tracker - EMG Classifier</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <div class="container">
+        <div class="hero">
+            <h1>📊 Real-Time Confidence Tracker</h1>
+            <p class="hero-subtitle">
+                Monitor consistency dan confidence score dari prediksi model secara real-time
+            </p>
+        </div>
+
+        <!-- Input Section -->
+        <div class="card">
+            <h2>Input EMG Data</h2>
+            <div class="form-group">
+                <label>64 Nilai EMG (dipisahkan koma):</label>
+                <textarea id="emgInput" placeholder="12.5, 13.0, 11.8, ... (64 nilai total)"></textarea>
+            </div>
+            <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
+                <button onclick="predictWithTracking()" class="btn btn-primary">
+                    🎯 Predict & Track
+                </button>
+                <button onclick="generateSample()" class="btn btn-secondary">
+                    🎲 Generate Random
+                </button>
+                <button onclick="clearHistory()" class="btn btn-outline">
+                    🗑️ Clear History
+                </button>
+            </div>
+        </div>
+
+        <!-- Current Result -->
+        <div id="currentResult" class="card" style="display: none;">
+            <h2>Current Prediction</h2>
+            <div class="result-box">
+                <div class="gesture-result" id="currentGesture">-</div>
+                <div style="margin-top: 1rem;">
+                    <span style="font-size: 1.25rem; color: var(--text-medium);">
+                        Confidence: <strong id="currentConfidence" style="color: var(--accent-primary);">-</strong>
+                    </span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Charts -->
+        <div class="grid grid-2">
+            <div class="card">
+                <h3>Confidence Trend</h3>
+                <canvas id="confidenceChart"></canvas>
+            </div>
+            <div class="card">
+                <h3>Gesture Distribution</h3>
+                <canvas id="gestureChart"></canvas>
+            </div>
+        </div>
+
+        <!-- Statistics -->
+        <div class="card" id="statsCard" style="display: none;">
+            <h2>Session Statistics</h2>
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <span class="stat-value" id="totalPredictions">0</span>
+                    <span class="stat-label">Total Predictions</span>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-value" id="avgConfidence">0%</span>
+                    <span class="stat-label">Avg Confidence</span>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-value" id="mostFrequent">-</span>
+                    <span class="stat-label">Most Frequent</span>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-value" id="stability">-</span>
+                    <span class="stat-label">Stability</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- History Table -->
+        <div class="card" id="historyCard" style="display: none;">
+            <h2>Prediction History (Last 10)</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Gesture</th>
+                        <th>Confidence</th>
+                        <th>Time</th>
+                    </tr>
+                </thead>
+                <tbody id="historyTable">
+                </tbody>
+            </table>
+        </div>
+
+        <div class="nav-buttons">
+            <a href="{{ url_for('index') }}" class="btn btn-secondary">← Dashboard</a>
+            <a href="{{ url_for('predict') }}" class="btn btn-secondary">Try Simple Predict</a>
+        </div>
+    </div>
+
+    <script>
+        let confidenceChart, gestureChart;
+        
+        // Initialize charts
+        const confidenceCtx = document.getElementById('confidenceChart').getContext('2d');
+        confidenceChart = new Chart(confidenceCtx, {
+            type: 'line',
+            data: {
+                labels: [],
+                datasets: [{
+                    label: 'Confidence Score',
+                    data: [],
+                    borderColor: '#d97706',
+                    backgroundColor: 'rgba(217, 119, 6, 0.1)',
+                    tension: 0.3
+                }]
+            },
+            options: {
+                responsive: true,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        max: 100
+                    }
+                }
+            }
+        });
+
+        const gestureCtx = document.getElementById('gestureChart').getContext('2d');
+        gestureChart = new Chart(gestureCtx, {
+            type: 'bar',
+            data: {
+                labels: [],
+                datasets: [{
+                    label: 'Count',
+                    data: [],
+                    backgroundColor: ['#d97706', '#ea580c', '#fb923c', '#fed7aa']
+                }]
+            },
+            options: {
+                responsive: true,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            stepSize: 1
+                        }
+                    }
+                }
+            }
+        });
+
+        async function predictWithTracking() {
+            const emgData = document.getElementById('emgInput').value;
+            
+            if (!emgData.trim()) {
+                alert('Please input EMG data first!');
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/predict-with-tracking', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ emg_data: emgData })
+                });
+
+                const result = await response.json();
+                
+                if (result.error) {
+                    alert('Error: ' + result.error);
+                    return;
+                }
+
+                updateDisplay(result);
+            } catch (error) {
+                alert('Network error: ' + error);
+            }
+        }
+
+        function updateDisplay(result) {
+            // Show current result
+            document.getElementById('currentResult').style.display = 'block';
+            document.getElementById('currentGesture').textContent = result.prediction;
+            document.getElementById('currentConfidence').textContent = 
+                (result.confidence * 100).toFixed(1) + '%';
+
+            // Update charts
+            const history = result.history || [];
+            
+            // Confidence trend
+            confidenceChart.data.labels = history.map((_, i) => `#${i + 1}`);
+            confidenceChart.data.datasets[0].data = history.map(h => (h.confidence * 100).toFixed(1));
+            confidenceChart.update();
+
+            // Gesture distribution
+            const gestureCounts = {};
+            history.forEach(h => {
+                gestureCounts[h.gesture] = (gestureCounts[h.gesture] || 0) + 1;
+            });
+            
+            gestureChart.data.labels = Object.keys(gestureCounts);
+            gestureChart.data.datasets[0].data = Object.values(gestureCounts);
+            gestureChart.update();
+
+            // Update statistics
+            if (history.length > 0) {
+                document.getElementById('statsCard').style.display = 'block';
+                document.getElementById('totalPredictions').textContent = history.length;
+                
+                const avgConf = history.reduce((sum, h) => sum + h.confidence, 0) / history.length;
+                document.getElementById('avgConfidence').textContent = (avgConf * 100).toFixed(1) + '%';
+
+                const mostFreq = Object.entries(gestureCounts).sort((a, b) => b[1] - a[1])[0][0];
+                document.getElementById('mostFrequent').textContent = mostFreq;
+
+                const stability = avgConf > 0.9 ? 'Excellent' : avgConf > 0.8 ? 'Good' : 'Moderate';
+                document.getElementById('stability').textContent = stability;
+            }
+
+            // Update history table
+            updateHistoryTable(history);
+        }
+
+        function updateHistoryTable(history) {
+            const tbody = document.getElementById('historyTable');
+            tbody.innerHTML = '';
+
+            if (history.length > 0) {
+                document.getElementById('historyCard').style.display = 'block';
+                
+                history.slice().reverse().forEach((item, index) => {
+                    const row = tbody.insertRow();
+                    row.innerHTML = `
+                        <td>${history.length - index}</td>
+                        <td><strong>${item.gesture}</strong></td>
+                        <td><span style="color: var(--accent-primary);">${(item.confidence * 100).toFixed(1)}%</span></td>
+                        <td>${new Date(item.timestamp * 1000).toLocaleTimeString()}</td>
+                    `;
+                });
+            }
+        }
+
+        async function generateSample() {
+            const gestures = [0, 1, 2, 3];
+            const randomGesture = gestures[Math.floor(Math.random() * gestures.length)];
+            
+            // Generate synthetic data
+            const data = [];
+            for (let i = 0; i < 64; i++) {
+                data.push((Math.random() * 30 + 5).toFixed(2));
+            }
+            
+            document.getElementById('emgInput').value = data.join(', ');
+        }
+
+        async function clearHistory() {
+            if (confirm('Clear all prediction history?')) {
+                await fetch('/api/clear-history', { method: 'POST' });
+                
+                document.getElementById('currentResult').style.display = 'none';
+                document.getElementById('statsCard').style.display = 'none';
+                document.getElementById('historyCard').style.display = 'none';
+                
+                confidenceChart.data.labels = [];
+                confidenceChart.data.datasets[0].data = [];
+                confidenceChart.update();
+                
+                gestureChart.data.labels = [];
+                gestureChart.data.datasets[0].data = [];
+                gestureChart.update();
+            }
+        }
+    </script>
+</body>
+</html>

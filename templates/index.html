@@ -4,157 +4,172 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard - EMG Gesture Classifier</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}"> 
 </head>
 <body>
+    <header class="header">
+        <div class="header-content">
+            <a href="{{ url_for('index') }}" class="logo">
+                🤖 EMG Classifier
+            </a>
+            <nav>
+                <ul class="nav-links">
+                    <li><a href="{{ url_for('index') }}" class="active">Dashboard</a></li>
+                    <li><a href="{{ url_for('predict') }}">Predict</a></li>
+                    <li><a href="{{ url_for('model_info') }}">Model Info</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
     <div class="container">
-        <!-- Hero Section -->
         <div class="hero">
-            <div class="hero-content">
-                <h1>🤖 Klasifikasi Gestur Tangan dengan AI</h1>
-                <p class="hero-subtitle">
-                    Sistem pintar yang dapat mengenali 4 gerakan tangan berbeda menggunakan sinyal elektrik dari otot (EMG). 
-                    Teknologi yang sama digunakan di prostetik canggih dan kontrol robotik!
-                </p>
-                
-                <a href="{{ url_for('predict') }}" class="cta-button">
-                    🚀 Coba Prediksi Sekarang
-                    <span>→</span>
-                </a>
-                
-                <div class="hero-stats">
-                    <div class="stat-card">
-                        <div class="stat-number">4</div>
-                        <div class="stat-label">Jenis Gestur</div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-number">64</div>
-                        <div class="stat-label">Input Fitur</div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-number">92%+</div>
-                        <div class="stat-label">Akurasi</div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-number">SVM</div>
-                        <div class="stat-label">AI Model</div>
-                    </div>
+            <h1>Klasifikasi Gestur Tangan dengan AI</h1>
+            <p class="hero-subtitle">
+                Sistem pintar yang dapat mengenali 4 gerakan tangan berbeda menggunakan sinyal 
+                EMG dari sensor. Teknologi yang sama digunakan di prostetik canggih!
+            </p>
+            <a href="{{ url_for('predict') }}" class="btn btn-primary">
+                🚀 Mulai Prediksi
+            </a>
+            
+            <div class="hero-stats">
+                <div class="stat-card">
+                    <span class="stat-value">4</span>
+                    <span class="stat-label">Jenis Gestur</span>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-value">64</span>
+                    <span class="stat-label">Input Fitur</span>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-value">92.6%</span>
+                    <span class="stat-label">Akurasi</span>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-value">11,678</span>
+                    <span class="stat-label">Training Data</span>
                 </div>
             </div>
         </div>
-        
-        <!-- Info Cards -->
-        <div class="info-grid">
-            <div class="info-card">
-                <div class="card-icon">⚡</div>
-                <h3 class="card-title">Apa itu Sinyal EMG?</h3>
-                <p class="card-description">
-                    EMG (Electromyography) adalah sinyal listrik kecil yang dihasilkan otot saat berkontraksi. 
-                    Seperti sidik jari, setiap gerakan menghasilkan pola sinyal yang unik. Sistem ini membaca 
-                    pola tersebut untuk mengenali gerakan Anda.
-                </p>
+
+        <section class="pipeline-section">
+            <h2>Fitur Utama</h2>
+            <div class="grid grid-3">
+                <a href="{{ url_for('predict') }}" class="feature-card">
+                    <div class="feature-icon">🎯</div>
+                    <h3 class="feature-title">Prediksi Gestur</h3>
+                    <p class="feature-description">
+                        Input data EMG dan dapatkan prediksi gestur secara instant dengan confidence score
+                    </p>
+                </a>
+
+                <a href="{{ url_for('confidence_tracker') }}" class="feature-card">
+                    <div class="feature-icon">📊</div>
+                    <h3 class="feature-title">Confidence Tracker</h3>
+                    <p class="feature-description">
+                        Monitor consistency prediksi model dengan real-time confidence tracking
+                    </p>
+                </a>
+
+                <a href="{{ url_for('compare_gestures') }}" class="feature-card">
+                    <div class="feature-icon">🔍</div>
+                    <h3 class="feature-title">Compare Gestures</h3>
+                    <p class="feature-description">
+                        Bandingkan pola EMG antar gestur dan lihat perbedaan sensor activation
+                    </p>
+                </a>
+
+                <a href="{{ url_for('batch_predict') }}" class="feature-card">
+                    <div class="feature-icon">📁</div>
+                    <h3 class="feature-title">Batch Prediction</h3>
+                    <p class="feature-description">
+                        Upload CSV file dengan multiple samples dan predict sekaligus
+                    </p>
+                </a>
+
+                <a href="{{ url_for('model_info') }}" class="feature-card">
+                    <div class="feature-icon">🔬</div>
+                    <h3 class="feature-title">Model Info</h3>
+                    <p class="feature-description">
+                        Detail performa model, metrics, dan confusion matrix
+                    </p>
+                </a>
+
+                <div class="feature-card inactive-card">
+                    <div class="feature-icon">🎲</div>
+                    <h3 class="feature-title">Random Samples</h3>
+                    <p class="feature-description">
+                        Generate sample data untuk testing (available di halaman Predict)
+                    </p>
+                </div>
             </div>
-            
-            <div class="info-card">
-                <div class="card-icon">📊</div>
-                <h3 class="card-title">Kenapa 64 Angka?</h3>
-                <p class="card-description">
-                    Sistem menggunakan 8 sensor yang dipasang di lengan. Setiap sensor merekam data dalam 8 
-                    interval waktu berbeda. Total: 8 sensor × 8 waktu = 64 titik data yang membentuk "signature" 
-                    unik untuk setiap gerakan.
-                </p>
-            </div>
-            
-            <div class="info-card">
-                <div class="card-icon">🧠</div>
-                <h3 class="card-title">Kecerdasan Buatan</h3>
-                <p class="card-description">
-                    Model SVM (Support Vector Machine) adalah algoritma AI yang mahir mengenali pola kompleks. 
-                    Setelah belajar dari ribuan contoh, model dapat membedakan gerakan Rock ✊, Scissors ✌️, 
-                    Paper ✋, dan OK 👌 dengan sangat akurat.
-                </p>
-            </div>
-        </div>
-        
-        <!-- Pipeline Section -->
-        <div class="pipeline-section">
+        </section>
+
+        <section class="pipeline-section">
             <h2 class="section-title">🔄 Cara Kerja Sistem</h2>
-            <p style="color: var(--text-light); margin-bottom: 1rem;">
-                Dari sinyal otot mentah hingga prediksi gerakan final, ini adalah perjalanan data Anda:
+            <p class="pipeline-desc">
+                Pipeline dari raw signal hingga gesture prediction:
             </p>
             
             <div class="pipeline">
                 <div class="pipeline-step">
                     <div class="step-number">1</div>
-                    <div class="step-label">Akuisisi Sinyal<br>8 Sensor EMG</div>
+                    <h4 class="step-label">Akuisisi Sinyal</h4>
+                    <p class="step-desc">8 Sensor EMG</p>
                 </div>
+                
                 <div class="pipeline-step">
                     <div class="step-number">2</div>
-                    <div class="step-label">Preprocessing<br>& Normalisasi</div>
+                    <h4 class="step-label">Preprocessing</h4>
+                    <p class="step-desc">& Normalisasi</p>
                 </div>
+                
                 <div class="pipeline-step">
                     <div class="step-number">3</div>
-                    <div class="step-label">Ekstraksi Fitur<br>64 Dimensi</div>
+                    <h4 class="step-label">Ekstraksi Fitur</h4>
+                    <p class="step-desc">64 Dimensi</p>
                 </div>
+                
                 <div class="pipeline-step">
                     <div class="step-number">4</div>
-                    <div class="step-label">Klasifikasi SVM<br>AI Prediction</div>
+                    <h4 class="step-label">Klasifikasi SVM</h4>
+                    <p class="step-desc">AI Prediction</p>
                 </div>
+                
                 <div class="pipeline-step">
                     <div class="step-number">5</div>
-                    <div class="step-label">Hasil & Visualisasi<br>Interface</div>
+                    <h4 class="step-label">Hasil & Visualisasi</h4>
+                    <p class="step-desc">Interface</p>
                 </div>
             </div>
-        </div>
-        
-        <!-- Features -->
-        <div class="pipeline-section">
-            <h2 class="section-title">✨ Fitur Unggulan</h2>
+        </section>
+
+        <section class="pipeline-section">
+            <h2 class="section-title">✨ 4 Gestur yang Dikenali</h2>
             
-            <div class="features-grid">
-                <div class="feature-item">
-                    <div class="feature-icon">🎯</div>
-                    <div class="feature-text">
-                        <h3>Akurasi Tinggi</h3>
-                        <p>Model telah dilatih dengan 11.678+ sampel data real untuk hasil prediksi terbaik</p>
-                    </div>
+            <div class="grid grid-2">
+                <div class="gesture-info-card">
+                    <h3>✊ Rock</h3>
+                    <p>Aktivitas tinggi di semua sensor. Recall: 94.5%</p>
                 </div>
                 
-                <div class="feature-item">
-                    <div class="feature-icon">⚡</div>
-                    <div class="feature-text">
-                        <h3>Prediksi Instant</h3>
-                        <p>Hasil klasifikasi muncul dalam hitungan milidetik setelah input data</p>
-                    </div>
+                <div class="gesture-info-card">
+                    <h3>✌️ Scissors</h3>
+                    <p>Pola V - sensor jari telunjuk & tengah. Recall: 97.6%</p>
                 </div>
                 
-                <div class="feature-item">
-                    <div class="feature-icon">📈</div>
-                    <div class="feature-text">
-                        <h3>Confidence Score</h3>
-                        <p>Lihat tingkat kepercayaan model untuk setiap prediksi yang dibuat</p>
-                    </div>
+                <div class="gesture-info-card">
+                    <h3>✋ Paper</h3>
+                    <p>Aktivitas merata tapi lebih rendah. Recall: 90.2%</p>
                 </div>
                 
-                <div class="feature-item">
-                    <div class="feature-icon">🎨</div>
-                    <div class="feature-text">
-                        <h3>Visualisasi Heatmap</h3>
-                        <p>Representasi visual 8×8 dari aktivitas sensor untuk interpretasi mudah</p>
-                    </div>
+                <div class="gesture-info-card">
+                    <h3>👌 OK</h3>
+                    <p>Fokus di ibu jari & telunjuk. Recall: 88.4%</p>
                 </div>
             </div>
-        </div>
-        
-        <!-- Bottom Navigation -->
-        <div class="bottom-nav">
-            <a href="{{ url_for('model_info') }}" class="secondary-button">
-                🔬 Detail Model & Metrik
-            </a>
-            <a href="{{ url_for('predict') }}" class="secondary-button">
-                🚀 Mulai Prediksi
-            </a>
-        </div>
+        </section>
     </div>
 </body>
 </html>

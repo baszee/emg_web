@@ -5,6 +5,29 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Hasil Prediksi - EMG Classifier</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <style>
+        /* Inline styles untuk warna dinamis heatmap */
+        {% for value in input_data_64 %}
+            {% set abs_vals = input_data_64 | map('abs') | list %}
+            {% set max_val = abs_vals | max %}
+            {% set min_val = abs_vals | min %}
+            {% set abs_val = value | abs %}
+            {% set scaled_opacity = (abs_val - min_val) / (max_val - min_val + 0.001) %}
+            
+            .cell-{{ loop.index0 }} {
+                {% if scaled_opacity > 0.7 %}
+                background: rgba(217, 119, 6, {{ scaled_opacity }});
+                color: white;
+                {% elif scaled_opacity > 0.4 %}
+                background: rgba(251, 191, 36, {{ scaled_opacity }});
+                color: #292524;
+                {% else %}
+                background: rgba(254, 243, 199, {{ scaled_opacity + 0.3 }});
+                color: #292524;
+                {% endif %}
+            }
+        {% endfor %}
+    </style>
 </head>
 <body>
     <div class="container">
@@ -28,11 +51,11 @@
             {% if expected_gesture %}
             <div style="text-align: center; margin-top: 1rem;">
                 <p style="color: var(--text-light); font-size: 1rem;">
-                    Expected: <strong style="color: var(--primary-dark);">{{ expected_gesture }}</strong>
+                    Expected: <strong style="color: var(--primary);">{{ expected_gesture }}</strong>
                     {% if expected_gesture in gesture %}
-                    <span style="color: var(--secondary); font-weight: 700;">✓ MATCH!</span>
+                    <span style="color: #15803d; font-weight: 700;">✓ MATCH!</span>
                     {% else %}
-                    <span style="color: var(--accent); font-weight: 700;">✗ DIFFERENT</span>
+                    <span style="color: #ca8a04; font-weight: 700;">✗ DIFFERENT</span>
                     {% endif %}
                 </p>
             </div>
@@ -55,13 +78,15 @@
                     {% set confidence = probabilities[class_id] * 100 %}
                     <span class="prob-value">{{ confidence | round(2) }}%</span>
                     
-                    <div class="prob-bar" style="width: {{ confidence | round(0) }}%;"></div>
+                    <div class="prob-bar-container">
+                        <div class="prob-bar" style="width: {{ confidence | round(0) }}%;"></div>
+                    </div>
                 </div>
                 {% endfor %}
             </div>
         </section>
 
-        <!-- Input Visualization -->
+        <!-- Input Visualization - FIXED COLORS -->
         <section class="pipeline-section">
             <h2 class="section-title">🎨 Visualisasi Input Sinyal (8×8 Grid)</h2>
             <p style="color: var(--text-light); margin-bottom: 1rem;">
@@ -71,17 +96,8 @@
             
             <div class="emg-grid-container">
                 <div class="emg-grid">
-                    {% set abs_vals = input_data_64 | map('abs') | list %}
-                    {% set max_val = abs_vals | max %}
-                    {% set min_val = abs_vals | min %}
-                    
                     {% for value in input_data_64 %}
-                        {% set abs_val = value | abs %}
-                        {% set scaled_opacity = (abs_val - min_val) / (max_val - min_val + 0.001) %}
-                        {% set text_color = 'white' if scaled_opacity > 0.6 else '#1e293b' %}
-                        
-                        <div class="grid-cell" 
-                             style="background: linear-gradient(135deg, rgba(52, 211, 153, {{ scaled_opacity }}), rgba(96, 165, 250, {{ scaled_opacity * 0.8 }})); color: {{ text_color }};"
+                        <div class="grid-cell cell-{{ loop.index0 }}" 
                              title="Sensor Value: {{ value | round(2) }}">
                             {{ value | round(1) }}
                         </div>

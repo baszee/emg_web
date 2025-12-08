@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Batch Prediction - EMG Classifier</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <style>
+        /* Confidence color classes */
+        .conf-high { color: #15803d; }
+        .conf-medium { color: #ca8a04; }
+        .conf-low { color: #b91c1c; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="hero">
+            <h1>📁 Batch Prediction Mode</h1>
+            <p class="hero-subtitle">
+                Upload CSV file dengan multiple samples dan dapatkan prediksi sekaligus
+            </p>
+        </div>
+
+        {% if error %}
+        <div class="alert alert-error">
+            ⚠️ {{ error }}
+        </div>
+        {% endif %}
+
+        <!-- Upload Section -->
+        <div class="card">
+            <h2>Upload CSV File</h2>
+            <form method="POST" enctype="multipart/form-data">
+                <div class="form-group">
+                    <label>Select CSV File:</label>
+                    <input type="file" name="csv_file" accept=".csv" required>
+                </div>
+                <button type="submit" class="btn btn-primary">
+                    📤 Upload & Predict
+                </button>
+            </form>
+
+            <div class="alert alert-info" style="margin-top: 1.5rem;">
+                <strong>📝 CSV Format Requirements:</strong>
+                <ul style="margin-top: 0.5rem; margin-left: 1.5rem;">
+                    <li>Each row = 1 sample dengan 64 nilai EMG</li>
+                    <li>No header row</li>
+                    <li>Values dipisahkan dengan koma</li>
+                    <li>Contoh: <code>12.5,13.0,11.8,...</code></li>
+                </ul>
+            </div>
+        </div>
+
+        {% if results %}
+        <!-- Summary Statistics -->
+        <div class="card">
+            <h2>Prediction Summary</h2>
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <span class="stat-value">{{ summary.total_samples }}</span>
+                    <span class="stat-label">Total Samples</span>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-value">{{ summary.avg_confidence }}%</span>
+                    <span class="stat-label">Avg Confidence</span>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-value">{{ summary.gesture_distribution|length }}</span>
+                    <span class="stat-label">Unique Gestures</span>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-value">
+                        {% set max_gesture = summary.gesture_distribution|dictsort(by='value', reverse=true)|first %}
+                        {{ max_gesture[0].split()[0] }}
+                    </span>
+                    <span class="stat-label">Most Frequent</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Gesture Distribution -->
+        <div class="card">
+            <h2>Gesture Distribution</h2>
+            <div class="prob-list">
+                {% for gesture, count in summary.gesture_distribution.items() %}
+                <div class="prob-item">
+                    <span class="prob-label">{{ gesture }}</span>
+                    <span class="prob-value">{{ count }}</span>
+                    <div class="prob-bar-container">
+                        <div class="prob-bar" style="width: {{ (count / summary.total_samples * 100)|round(0) }}%;"></div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Results Table -->
+        <div class="card">
+            <h2>Detailed Results ({{ results|length }} samples)</h2>
+            <div style="overflow-x: auto;">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Sample ID</th>
+                            <th>Prediction</th>
+                            <th>Confidence</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for result in results %}
+                        <tr>
+                            <td>#{{ result.sample_id }}</td>
+                            <td><strong>{{ result.prediction }}</strong></td>
+                            <td>
+                                <span class="{% if result.confidence >= 90 %}conf-high{% elif result.confidence >= 75 %}conf-medium{% else %}conf-low{% endif %}">
+                                    {{ result.confidence }}%
+                                </span>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <div style="margin-top: 1.5rem;">
+                <button onclick="downloadResults()" class="btn btn-primary">
+                    💾 Download Results (CSV)
+                </button>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Sample CSV Template -->
+        <div class="card">
+            <h2>📄 Download Sample Template</h2>
+            <p style="color: var(--text-light);">
+                Gunakan template ini sebagai contoh format CSV yang benar
+            </p>
+            <button onclick="downloadTemplate()" class="btn btn-secondary">
+                ⬇️ Download Template CSV
+            </button>
+        </div>
+
+        <div class="nav-buttons">
+            <a href="{{ url_for('index') }}" class="btn btn-secondary">← Dashboard</a>
+            <a href="{{ url_for('predict') }}" class="btn btn-secondary">Single Prediction</a>
+        </div>
+    </div>
+
+    <script>
+        function downloadResults() {
+            {% if results %}
+            let csv = 'Sample ID,Prediction,Confidence\n';
+            {% for result in results %}
+            csv += '{{ result.sample_id }},{{ result.prediction }},{{ result.confidence }}\n';
+            {% endfor %}
+
+            const blob = new Blob([csv], { type: 'text/csv' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'emg_batch_results_' + new Date().getTime() + '.csv';
+            a.click();
+            {% endif %}
+        }
+
+        function downloadTemplate() {
+            let csv = '';
+            for (let i = 0; i < 5; i++) {
+                const row = [];
+                for (let j = 0; j < 64; j++) {
+                    row.push((Math.random() * 30 + 5).toFixed(2));
+                }
+                csv += row.join(',') + '\n';
+            }
+
+            const blob = new Blob([csv], { type: 'text/csv' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'emg_sample_template.csv';
+            a.click();
+        }
+    </script>
+</body>
+</html>
