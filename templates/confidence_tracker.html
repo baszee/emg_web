@@ -8,6 +8,35 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
+    <!-- HEADER WITH HAMBURGER MENU -->
+    <header class="header">
+        <div class="header-content">
+            <a href="{{ url_for('index') }}" class="logo">
+                🤖 EMG Classifier
+            </a>
+            <button class="hamburger-menu" id="hamburgerMenu" aria-label="Toggle Menu">
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
+        </div>
+    </header>
+
+    <!-- NAVIGATION MENU -->
+    <nav class="nav-menu" id="navMenu">
+        <ul class="nav-links">
+            <li><a href="{{ url_for('index') }}">🏠 Dashboard</a></li>
+            <li><a href="{{ url_for('predict') }}">🎯 Predict Gesture</a></li>
+            <li><a href="{{ url_for('confidence_tracker') }}" class="active">📊 Confidence Tracker</a></li>
+            <li><a href="{{ url_for('compare_gestures') }}">🔍 Compare Gestures</a></li>
+            <li><a href="{{ url_for('batch_predict') }}">📁 Batch Prediction</a></li>
+            <li><a href="{{ url_for('model_info') }}">🔬 Model Info</a></li>
+        </ul>
+    </nav>
+
+    <!-- OVERLAY -->
+    <div class="nav-overlay" id="navOverlay"></div>
+
     <div class="container">
         <div class="hero">
             <h1>📊 Real-Time Confidence Tracker</h1>
@@ -42,8 +71,8 @@
             <div class="result-box">
                 <div class="gesture-result" id="currentGesture">-</div>
                 <div style="margin-top: 1rem;">
-                    <span style="font-size: 1.25rem; color: var(--text-medium);">
-                        Confidence: <strong id="currentConfidence" style="color: var(--accent-primary);">-</strong>
+                    <span style="font-size: 1.25rem; color: var(--text);">
+                        Confidence: <strong id="currentConfidence" style="color: var(--primary);">-</strong>
                     </span>
                 </div>
             </div>
@@ -108,9 +137,37 @@
     </div>
 
     <script>
+        // Hamburger Menu
+        const hamburger = document.getElementById('hamburgerMenu');
+        const navMenu = document.getElementById('navMenu');
+        const navOverlay = document.getElementById('navOverlay');
+
+        function toggleMenu() {
+            hamburger.classList.toggle('active');
+            navMenu.classList.toggle('active');
+            navOverlay.classList.toggle('active');
+        }
+
+        hamburger.addEventListener('click', toggleMenu);
+        navOverlay.addEventListener('click', toggleMenu);
+
+        document.querySelectorAll('.nav-links a').forEach(link => {
+            link.addEventListener('click', () => {
+                hamburger.classList.remove('active');
+                navMenu.classList.remove('active');
+                navOverlay.classList.remove('active');
+            });
+        });
+
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && navMenu.classList.contains('active')) {
+                toggleMenu();
+            }
+        });
+
+        // Charts and Functions (EXISTING CODE - NO CHANGES)
         let confidenceChart, gestureChart;
         
-        // Initialize charts
         const confidenceCtx = document.getElementById('confidenceChart').getContext('2d');
         confidenceChart = new Chart(confidenceCtx, {
             type: 'line',
@@ -190,21 +247,17 @@
         }
 
         function updateDisplay(result) {
-            // Show current result
             document.getElementById('currentResult').style.display = 'block';
             document.getElementById('currentGesture').textContent = result.prediction;
             document.getElementById('currentConfidence').textContent = 
                 (result.confidence * 100).toFixed(1) + '%';
 
-            // Update charts
             const history = result.history || [];
             
-            // Confidence trend
             confidenceChart.data.labels = history.map((_, i) => `#${i + 1}`);
             confidenceChart.data.datasets[0].data = history.map(h => (h.confidence * 100).toFixed(1));
             confidenceChart.update();
 
-            // Gesture distribution
             const gestureCounts = {};
             history.forEach(h => {
                 gestureCounts[h.gesture] = (gestureCounts[h.gesture] || 0) + 1;
@@ -214,7 +267,6 @@
             gestureChart.data.datasets[0].data = Object.values(gestureCounts);
             gestureChart.update();
 
-            // Update statistics
             if (history.length > 0) {
                 document.getElementById('statsCard').style.display = 'block';
                 document.getElementById('totalPredictions').textContent = history.length;
@@ -229,7 +281,6 @@
                 document.getElementById('stability').textContent = stability;
             }
 
-            // Update history table
             updateHistoryTable(history);
         }
 
@@ -245,7 +296,7 @@
                     row.innerHTML = `
                         <td>${history.length - index}</td>
                         <td><strong>${item.gesture}</strong></td>
-                        <td><span style="color: var(--accent-primary);">${(item.confidence * 100).toFixed(1)}%</span></td>
+                        <td><span style="color: var(--primary);">${(item.confidence * 100).toFixed(1)}%</span></td>
                         <td>${new Date(item.timestamp * 1000).toLocaleTimeString()}</td>
                     `;
                 });
@@ -253,10 +304,6 @@
         }
 
         async function generateSample() {
-            const gestures = [0, 1, 2, 3];
-            const randomGesture = gestures[Math.floor(Math.random() * gestures.length)];
-            
-            // Generate synthetic data
             const data = [];
             for (let i = 0; i < 64; i++) {
                 data.push((Math.random() * 30 + 5).toFixed(2));

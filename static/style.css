@@ -1,7 +1,6 @@
 /* ========================================
    EMG Classifier - Warm Orange Theme
-   FINAL VERSION - All Issues Fixed
-   (Revisi: Pipeline steps uniform and borderless, stat cards now have light background)
+   UPDATED VERSION with Header & Mobile Fixes
    ======================================== */
 
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap');
@@ -55,13 +54,15 @@ body {
     min-height: 100vh;
     color: var(--text);
     line-height: 1.6;
-    padding: 2rem 1rem;
+    padding: 0;
+    padding-top: 80px; /* Space for fixed header */
 }
 
 /* --- CONTAINER --- */
 .container {
     max-width: 1200px;
     margin: 0 auto;
+    padding: 2rem 1rem;
     animation: fadeInUp 0.6s ease-out;
 }
 
@@ -105,21 +106,27 @@ p {
     line-height: 1.6;
 }
 
-/* --- HEADER --- */
+/* ========================================
+   NEW: HEADER WITH HAMBURGER MENU
+   ======================================== */
 .header {
     background: var(--card-bg);
-    border-radius: 20px;
-    padding: 1.5rem 2rem;
-    margin-bottom: 2rem;
     box-shadow: var(--shadow-md);
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 1000;
+    padding: 0;
 }
 
 .header-content {
+    max-width: 1200px;
+    margin: 0 auto;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    flex-wrap: wrap;
-    gap: 1rem;
+    padding: 1rem 1.5rem;
 }
 
 .logo {
@@ -130,29 +137,104 @@ p {
     display: flex;
     align-items: center;
     gap: 0.5rem;
+    z-index: 1001;
+}
+
+/* Hamburger Menu Button */
+.hamburger-menu {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0.5rem;
+    z-index: 1001;
+}
+
+.hamburger-menu span {
+    width: 28px;
+    height: 3px;
+    background: var(--primary);
+    border-radius: 3px;
+    transition: all 0.3s ease;
+}
+
+.hamburger-menu:hover span {
+    background: var(--secondary);
+}
+
+/* Hamburger Animation when Active */
+.hamburger-menu.active span:nth-child(1) {
+    transform: rotate(45deg) translate(8px, 8px);
+}
+
+.hamburger-menu.active span:nth-child(2) {
+    opacity: 0;
+}
+
+.hamburger-menu.active span:nth-child(3) {
+    transform: rotate(-45deg) translate(7px, -7px);
+}
+
+/* Navigation Menu */
+.nav-menu {
+    position: fixed;
+    top: 0;
+    right: -100%;
+    width: 280px;
+    height: 100vh;
+    background: var(--card-bg);
+    box-shadow: -5px 0 20px rgba(0, 0, 0, 0.1);
+    padding: 5rem 2rem 2rem;
+    transition: right 0.3s ease;
+    z-index: 1000;
+    overflow-y: auto;
+}
+
+.nav-menu.active {
+    right: 0;
 }
 
 .nav-links {
-    display: flex;
-    gap: 1rem;
     list-style: none;
-    flex-wrap: wrap;
+    display: flex;
+    flex-direction: column;
+    gap: 0;
 }
 
 .nav-links a {
+    display: block;
     color: var(--text);
     text-decoration: none;
     font-weight: 600;
-    padding: 0.5rem 1rem;
+    padding: 1rem 1.25rem;
     border-radius: 8px;
     transition: all 0.3s;
+    border-left: 3px solid transparent;
 }
 
 .nav-links a:hover,
 .nav-links a.active {
-    background: linear-gradient(135deg, var(--primary-light), var(--accent));
+    background: linear-gradient(135deg, var(--light-bg), var(--accent));
     color: var(--dark);
-    transform: translateY(-2px);
+    border-left-color: var(--primary);
+}
+
+/* Overlay */
+.nav-overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 999;
+}
+
+.nav-overlay.active {
+    display: block;
 }
 
 /* --- CARDS --- */
@@ -167,7 +249,7 @@ p {
     transition: all 0.3s ease;
 }
 
-/* --- HERO SECTION (FIX: Stats inside white card) --- */
+/* --- HERO SECTION --- */
 .hero {
     position: relative;
     overflow: hidden;
@@ -269,7 +351,7 @@ button[type="button"]:hover {
     color: white;
 }
 
-/* --- STATS CARDS (REVISED: Menambahkan background coklat tipis dan menghilangkan border) --- */
+/* --- STATS CARDS --- */
 .hero-stats, .stats-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
@@ -280,19 +362,17 @@ button[type="button"]:hover {
 .stat-card {
     text-align: center;
     padding: 1.5rem;
-    /* BACKGROUND COKLAT TIPIS */
     background: linear-gradient(135deg, var(--light-bg), var(--light-bg-alt)); 
     border-radius: 16px;
     transition: transform 0.3s ease;
     box-shadow: var(--shadow-sm);
-    /* HILANGKAN BORDER COKLAT */
     border: none; 
 }
 
 .stat-card:hover {
     transform: translateY(-5px);
     box-shadow: var(--shadow-md);
-    background: linear-gradient(135deg, var(--accent), var(--light-bg)); /* Slight change on hover */
+    background: linear-gradient(135deg, var(--accent), var(--light-bg));
 }
 
 .stat-number, .stat-value {
@@ -332,7 +412,9 @@ button[type="button"]:hover {
     grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
 }
 
-/* --- INFO & FEATURE CARDS --- */
+/* ========================================
+   FIXED: FEATURE CARDS - FULL CLICKABLE
+   ======================================== */
 .info-card, .feature-card {
     background: var(--card-bg);
     border-radius: 16px;
@@ -340,12 +422,22 @@ button[type="button"]:hover {
     transition: all 0.3s ease;
     border: 2px solid var(--border-light);
     box-shadow: var(--shadow-sm);
+    cursor: pointer;
+    text-decoration: none !important; /* REMOVE UNDERLINE */
+    display: block;
+    color: inherit;
 }
 
 .info-card:hover, .feature-card:hover {
     transform: translateY(-5px);
     box-shadow: var(--shadow-lg);
     border-color: var(--primary);
+    text-decoration: none !important; /* KEEP NO UNDERLINE ON HOVER */
+}
+
+/* Remove underline from all text inside feature cards */
+.feature-card * {
+    text-decoration: none !important;
 }
 
 .card-icon, .feature-icon {
@@ -374,7 +466,7 @@ button[type="button"]:hover {
     font-size: 0.95rem;
 }
 
-/* --- PIPELINE SECTION (Uniform and Borderless) --- */
+/* --- PIPELINE SECTION --- */
 .section-title {
     font-size: 1.8rem;
     font-weight: 700;
@@ -406,47 +498,26 @@ button[type="button"]:hover {
 }
 
 .pipeline-step {
-    /* DEFAULT STATE: Warna sama (kuning muda) */
     background: var(--pipeline-bg-light); 
     border-radius: 16px;
     padding: 2rem 1.5rem;
     text-align: center;
     position: relative;
     transition: all 0.3s ease;
-    /* MENGHILANGKAN GARIS PINGGIR COKLAT */
     border: none; 
     box-shadow: var(--shadow-sm);
     color: var(--dark); 
 }
 
-/* Memastikan semua kotak memiliki gaya default yang seragam */
-.pipeline-step:nth-child(2) {
-    background: var(--pipeline-bg-light); 
-    border: none; 
-    color: var(--dark); 
-}
-
-/* Reset colors for all steps to ensure uniformity in default state */
-.pipeline-step:nth-child(1),
-.pipeline-step:nth-child(3),
-.pipeline-step:nth-child(4),
-.pipeline-step:nth-child(5) {
-    border: none;
-    background: var(--pipeline-bg-light);
-    color: var(--dark);
-}
-
-/* Hover effect: Semua kotak menjadi oranye terang saat di hover */
 .pipeline-step:hover {
     transform: translateY(-5px);
     box-shadow: var(--shadow-hover);
-    background: var(--primary); /* Primary color on hover */
+    background: var(--primary);
     border-color: var(--primary-dark);
-    color: white; /* White text on hover */
+    color: white;
     cursor: pointer;
 }
 
-/* Warna text dan nomor step saat di hover (untuk memastikan warna kontras) */
 .pipeline-step:hover .step-number {
     background: white;
     color: var(--primary); 
@@ -456,7 +527,6 @@ button[type="button"]:hover {
     color: white;
 }
 
-/* Color for the arrow between steps */
 .pipeline-step::after {
     content: '→';
     position: absolute;
@@ -476,7 +546,7 @@ button[type="button"]:hover {
     display: inline-block;
     width: 40px;
     height: 40px;
-    background: var(--primary); /* Primary color for step number background */
+    background: var(--primary);
     color: white;
     border-radius: 50%;
     font-weight: 700;
@@ -485,24 +555,17 @@ button[type="button"]:hover {
     font-size: 1.2rem;
 }
 
-/* Step number color inversion for the default light steps */
-.pipeline-step:nth-child(2) .step-number {
-    background: var(--primary);
-    color: white;
-}
-
 .step-label {
     font-weight: 600;
     font-size: 0.95rem;
     margin-bottom: 0.5rem;
 }
 
-/* Revert step desc color for non-hovered light boxes */
 .pipeline-step .step-desc {
     color: var(--text-light); 
 }
 
-/* --- GESTURE INFO CARDS (FIXED: Colors to match theme) --- */
+/* --- GESTURE INFO CARDS --- */
 .gesture-info-card {
     background: linear-gradient(135deg, var(--light-bg), var(--light-bg-alt));
     border: 2px solid var(--border);
@@ -741,7 +804,7 @@ label {
     box-shadow: 0 2px 8px rgba(217, 119, 6, 0.3);
 }
 
-/* --- EMG GRID HEATMAP (FIX: Orange theme, not cyan!) --- */
+/* --- EMG GRID HEATMAP --- */
 .emg-grid {
     display: grid;
     grid-template-columns: repeat(8, 1fr);
@@ -767,12 +830,6 @@ label {
     transition: all 0.2s ease;
     cursor: default;
     color: var(--dark);
-}
-
-/* Orange gradient for heatmap - override any inline styles */
-.grid-cell[style*="background"] {
-    /* Will be overridden by inline styles, but set base */
-    background: linear-gradient(135deg, #fef3c7, #fed7aa) !important;
 }
 
 .grid-cell:hover {
@@ -883,6 +940,7 @@ table tr:last-child td {
     align-items: center;
     min-height: 100vh;
     text-align: center;
+    padding-top: 0; /* Remove padding for landing */
 }
 
 .full-screen-center h1 {
@@ -902,6 +960,10 @@ table tr:last-child td {
     max-width: 700px;
     margin-bottom: 2rem;
 }
+
+/* ========================================
+   PART 2: RESPONSIVE & ANIMATIONS
+   ======================================== */
 
 .small-text {
     font-size: 0.875rem;
@@ -945,41 +1007,67 @@ table tr:last-child td {
     }
 }
 
-/* --- RESPONSIVE DESIGN --- */
+/* ========================================
+   RESPONSIVE DESIGN - MOBILE OPTIMIZED
+   ======================================== */
 @media (max-width: 768px) {
     body {
-        padding: 1rem;
+        padding-top: 70px; /* Smaller header on mobile */
+        padding-left: 0.5rem;
+        padding-right: 0.5rem;
     }
     
-    .hero, .info-card, .pipeline-section, .card {
-        padding: 1.5rem;
+    .container {
+        padding: 1rem 0.5rem;
     }
     
-    .header {
-        padding: 1rem;
-    }
-    
+    /* Header Mobile */
     .header-content {
-        flex-direction: column;
-        align-items: flex-start;
+        padding: 0.75rem 1rem;
     }
     
-    .nav-links {
-        width: 100%;
-        flex-direction: column;
+    .logo {
+        font-size: 1.25rem;
+    }
+    
+    .hamburger-menu {
+        padding: 0.25rem;
+    }
+    
+    .hamburger-menu span {
+        width: 24px;
+    }
+    
+    /* Nav Menu Mobile */
+    .nav-menu {
+        width: 85%;
+        max-width: 300px;
+        padding: 4rem 1.5rem 2rem;
     }
     
     .nav-links a {
-        width: 100%;
-        text-align: center;
+        padding: 0.875rem 1rem;
+        font-size: 0.95rem;
     }
     
+    /* Cards Padding */
+    .hero, .info-card, .pipeline-section, .card {
+        padding: 1.5rem;
+        margin-bottom: 1.5rem;
+        border-radius: 16px;
+    }
+    
+    /* Typography Mobile */
     h1 {
-        font-size: 1.8rem;
+        font-size: 1.75rem;
     }
     
     h2 {
         font-size: 1.4rem;
+    }
+    
+    h3 {
+        font-size: 1.2rem;
     }
     
     .hero-subtitle {
@@ -987,47 +1075,293 @@ table tr:last-child td {
     }
     
     .gesture-name, .gesture-result {
-        font-size: 2.5rem;
+        font-size: 2rem;
     }
     
+    /* Stats Grid Mobile - 2 columns */
+    .hero-stats, .stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 1rem;
+    }
+    
+    .stat-card {
+        padding: 1rem;
+    }
+    
+    .stat-value, .stat-number {
+        font-size: 1.8rem;
+    }
+    
+    .stat-label {
+        font-size: 0.75rem;
+    }
+    
+    /* Feature Cards Mobile - 1 column */
+    .grid-3, .grid-4 {
+        grid-template-columns: 1fr;
+    }
+    
+    .grid-2 {
+        grid-template-columns: 1fr;
+    }
+    
+    .info-grid, .grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .feature-card {
+        padding: 1.5rem;
+    }
+    
+    .card-icon, .feature-icon {
+        width: 50px;
+        height: 50px;
+        font-size: 1.5rem;
+        margin-bottom: 1rem;
+    }
+    
+    .card-title, .feature-title {
+        font-size: 1.2rem;
+    }
+    
+    /* Pipeline Mobile - Vertical */
     .pipeline {
         grid-template-columns: 1fr;
+        gap: 1.5rem;
+    }
+    
+    .pipeline-step {
+        padding: 1.5rem 1rem;
     }
     
     .pipeline-step::after {
         content: '↓';
         right: 50%;
         top: auto;
-        bottom: -1.5rem;
+        bottom: -1.75rem;
         transform: translateX(50%);
+        font-size: 1.25rem;
     }
     
     .pipeline-step:last-child::after {
         content: '';
     }
     
-    .metric-box-group, .grid-2, .grid-3, .grid-4 {
+    /* Buttons Mobile */
+    .button, .cta-button, .primary, .secondary, .secondary-button,
+    .btn, .btn-primary, .btn-secondary, .btn-outline,
+    button[type="submit"], button[type="button"] {
+        padding: 0.75rem 1.25rem;
+        font-size: 0.95rem;
+        width: 100%;
+        margin-right: 0;
+        margin-bottom: 0.75rem;
+    }
+    
+    .cta-button, .primary, .btn-primary {
+        font-size: 1rem;
+        padding: 0.875rem 1.5rem;
+    }
+    
+    /* Forms Mobile */
+    textarea, input[type="text"], input[type="file"], select {
+        padding: 0.875rem;
+        font-size: 0.9rem;
+    }
+    
+    textarea {
+        min-height: 120px;
+    }
+    
+    /* Probability Bars Mobile */
+    .prob-item {
+        flex-wrap: wrap;
+        padding: 0.75rem;
+    }
+    
+    .prob-label {
+        flex-basis: 100%;
+        min-width: auto;
+        font-size: 0.875rem;
+        margin-bottom: 0.25rem;
+    }
+    
+    .prob-value {
+        flex-basis: auto;
+        min-width: auto;
+        font-size: 0.875rem;
+        margin-right: 0.5rem;
+    }
+    
+    .prob-bar-container {
+        flex: 1;
+        margin-left: 0;
+        min-width: 100px;
+    }
+    
+    /* EMG Heatmap Mobile */
+    .emg-grid {
+        max-width: 100%;
+        gap: 1px;
+        border: 3px solid var(--primary);
+    }
+    
+    .grid-cell {
+        font-size: 0.65rem;
+        padding: 2px;
+    }
+    
+    .grid-cell:hover {
+        transform: scale(1.05);
+    }
+    
+    /* Tables Mobile - Scroll */
+    .card > div[style*="overflow-x"] {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+    
+    table {
+        font-size: 0.85rem;
+    }
+    
+    table th, table td {
+        padding: 0.75rem 0.5rem;
+    }
+    
+    /* Metric Cards Mobile */
+    .metric-box-group {
         grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+    
+    .metric-card {
+        padding: 1.25rem;
+    }
+    
+    .metric-value {
+        font-size: 1.5rem;
+    }
+    
+    /* Navigation Buttons Mobile */
+    .navigation-bottom, .bottom-nav, .nav-buttons {
+        flex-direction: column;
+        padding: 1.5rem 0;
+    }
+    
+    .navigation-bottom a,
+    .bottom-nav a,
+    .nav-buttons a,
+    .navigation-bottom button,
+    .bottom-nav button,
+    .nav-buttons button {
+        width: 100%;
+        margin: 0 0 0.75rem 0;
+    }
+    
+    /* Landing Page Mobile */
+    .full-screen-center {
+        padding: 2rem 1rem;
+    }
+    
+    .full-screen-center h1 {
+        font-size: 2rem;
+    }
+    
+    .full-screen-center h2 {
+        font-size: 1.3rem;
+    }
+    
+    .full-screen-center p {
+        font-size: 1rem;
+    }
+    
+    /* Feature Items Mobile */
+    .features-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .feature-item {
+        padding: 1.25rem;
+    }
+    
+    /* Alerts Mobile */
+    .alert, .alert-error, .alert-warning, .alert-success, .alert-info {
+        padding: 0.875rem 1rem;
+        font-size: 0.9rem;
+    }
+    
+    /* Predicted Box Mobile */
+    .predicted-box, .result-box {
+        padding: 2rem 1rem;
+    }
+    
+    /* Form Groups Mobile */
+    .form-group {
+        margin-bottom: 1.25rem;
+    }
+    
+    /* Gesture Info Cards Mobile */
+    .gesture-info-card {
+        padding: 1.25rem;
+    }
+    
+    .gesture-info-card h3 {
+        font-size: 1.1rem;
+    }
+    
+    .gesture-info-card p {
+        font-size: 0.875rem;
+    }
+}
+
+/* Extra Small Mobile (< 400px) */
+@media (max-width: 400px) {
+    h1 {
+        font-size: 1.5rem;
+    }
+    
+    .hero-stats, .stats-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .stat-value, .stat-number {
+        font-size: 1.5rem;
+    }
+    
+    .gesture-name, .gesture-result {
+        font-size: 1.75rem;
+    }
+    
+    .emg-grid {
+        gap: 0;
+    }
+    
+    .grid-cell {
+        font-size: 0.55rem;
+    }
+    
+    .nav-menu {
+        width: 90%;
+    }
+}
+
+/* Tablet Landscape (768px - 1024px) */
+@media (min-width: 769px) and (max-width: 1024px) {
+    .container {
+        padding: 1.5rem;
     }
     
     .hero-stats, .stats-grid {
         grid-template-columns: repeat(2, 1fr);
     }
     
-    .full-screen-center h1 {
-        font-size: 2.5rem;
+    .grid-3, .grid-4 {
+        grid-template-columns: repeat(2, 1fr);
     }
     
-    .prob-label {
-        flex-basis: 100px;
-        min-width: 80px;
-        font-size: 0.875rem;
-    }
-    
-    .prob-value {
-        flex-basis: 60px;
-        min-width: 50px;
-        font-size: 0.875rem;
+    .pipeline {
+        grid-template-columns: repeat(2, 1fr);
     }
 }
 
@@ -1041,3 +1375,8 @@ table tr:last-child td {
 .mb-2 { margin-bottom: 1rem; }
 .mb-3 { margin-bottom: 2rem; }
 .hidden { display: none; }
+
+/* Confidence color classes for batch prediction */
+.conf-high { color: #15803d; font-weight: 700; }
+.conf-medium { color: #ca8a04; font-weight: 700; }
+.conf-low { color: #b91c1c; font-weight: 700; }

@@ -7,6 +7,35 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
+    <!-- HEADER WITH HAMBURGER MENU -->
+    <header class="header">
+        <div class="header-content">
+            <a href="{{ url_for('index') }}" class="logo">
+                🤖 EMG Classifier
+            </a>
+            <button class="hamburger-menu" id="hamburgerMenu" aria-label="Toggle Menu">
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
+        </div>
+    </header>
+
+    <!-- NAVIGATION MENU -->
+    <nav class="nav-menu" id="navMenu">
+        <ul class="nav-links">
+            <li><a href="{{ url_for('index') }}">🏠 Dashboard</a></li>
+            <li><a href="{{ url_for('predict') }}" class="active">🎯 Predict Gesture</a></li>
+            <li><a href="{{ url_for('confidence_tracker') }}">📊 Confidence Tracker</a></li>
+            <li><a href="{{ url_for('compare_gestures') }}">🔍 Compare Gestures</a></li>
+            <li><a href="{{ url_for('batch_predict') }}">📁 Batch Prediction</a></li>
+            <li><a href="{{ url_for('model_info') }}">🔬 Model Info</a></li>
+        </ul>
+    </nav>
+
+    <!-- OVERLAY -->
+    <div class="nav-overlay" id="navOverlay"></div>
+
     <div class="container">
         <!-- Header -->
         <div class="hero">
@@ -127,8 +156,36 @@
         </nav>
     </div>
 
-    <!-- JavaScript -->
+    <!-- JAVASCRIPT -->
     <script>
+        // Hamburger Menu Script
+        const hamburger = document.getElementById('hamburgerMenu');
+        const navMenu = document.getElementById('navMenu');
+        const navOverlay = document.getElementById('navOverlay');
+
+        function toggleMenu() {
+            hamburger.classList.toggle('active');
+            navMenu.classList.toggle('active');
+            navOverlay.classList.toggle('active');
+        }
+
+        hamburger.addEventListener('click', toggleMenu);
+        navOverlay.addEventListener('click', toggleMenu);
+
+        document.querySelectorAll('.nav-links a').forEach(link => {
+            link.addEventListener('click', () => {
+                hamburger.classList.remove('active');
+                navMenu.classList.remove('active');
+                navOverlay.classList.remove('active');
+            });
+        });
+
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && navMenu.classList.contains('active')) {
+                toggleMenu();
+            }
+        });
+
         // Auto-fill form if random data is in URL
         document.addEventListener('DOMContentLoaded', function() {
             const urlParams = new URLSearchParams(window.location.search);
@@ -143,7 +200,7 @@
                 if (expectedGesture) {
                     const notification = document.createElement('div');
                     notification.style.cssText = `
-                        background: linear-gradient(135deg, var(--light-bg), var(--light-bg-blue));
+                        background: linear-gradient(135deg, var(--light-bg), var(--light-bg-alt));
                         padding: 1rem;
                         border-radius: 12px;
                         border-left: 4px solid var(--primary);
